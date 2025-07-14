@@ -14,6 +14,16 @@ const initApiRoutes = (app) => {
   router.post("/doimatkhau", apiController.doimatkhau);
   router.get("/laythongtintaikhoan", apiController.laythongtintaikhoan);
   router.put("/doithongtintaikhoan", apiController.doithongtintaikhoan);
+  router.get("/timnhanvien", apiController.timnhanvien);
+  router.get("/laydanhsachnhanvien", apiController.xemdanhsachnhanvien);
+  router.get(
+    "/laythongtinchitietcuanhanvien",
+    apiController.xemthongtinchitietcuanhanvien
+  );
+  router.put("/doithongtinnhanvien", apiController.doithongtinnhanvien);
+  router.put("/doimatkhaunhanvien", apiController.doimatkhaunhanvien);
+  router.put("/doichucvu", apiController.doichucvu);
+  router.put("/mohoackhoataikhoan", apiController.mohoackhoataikhoan);
 
   return app.use("/", router);
 };

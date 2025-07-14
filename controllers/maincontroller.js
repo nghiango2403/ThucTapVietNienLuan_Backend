@@ -69,6 +69,67 @@ const doithongtintaikhoan = async (req, res) => {
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
+const xemdanhsachnhanvien = async (req, res) => {
+  try {
+    const result = await service.XemDanhSachNhanVien();
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const timnhanvien = async (req, res) => {
+  try {
+    const result = await service.TimNhanVien(req.query.TenNhanVien);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xemthongtinchitietcuanhanvien = async (req, res) => {
+  try {
+    const result = await service.XemThongTinChiTietCuaNhanVien(
+      req.query.MaTaiKhoan
+    );
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const doithongtinnhanvien = async (req, res) => {
+  try {
+    const result = await service.DoiThongTinTaiKhoan(
+      req.query.MaNhanSu,
+      req.query
+    );
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const doimatkhaunhanvien = async (req, res) => {
+  try {
+    const result = await service.DoiMatKhauNhanVien(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const doichucvu = async (req, res) => {
+  try {
+    const result = await service.DoiChucVu(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const mohoackhoataikhoan = async (req, res) => {
+  try {
+    const result = await service.MoHoacKhoaTaiKhoan(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
 module.exports = {
   themchucvu,
   xemchucvu,
@@ -78,4 +139,11 @@ module.exports = {
   doimatkhau,
   laythongtintaikhoan,
   doithongtintaikhoan,
+  xemdanhsachnhanvien,
+  timnhanvien,
+  xemthongtinchitietcuanhanvien,
+  doithongtinnhanvien,
+  doimatkhaunhanvien,
+  doichucvu,
+  mohoackhoataikhoan,
 };

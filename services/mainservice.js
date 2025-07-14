@@ -134,7 +134,7 @@ const DangNhap = async ({ TenDangNhap, MatKhau }) => {
         message: "Sai tên đăng nhập hoặc mật khẩu",
       };
     }
-    const checkMatKhau = await bcrypt.compare(MatKhau, taikhoan.MatKhau);
+    const checkMatKhau = await KiemTraMaHoa(MatKhau, taikhoan.MatKhau);
     if (!checkMatKhau) {
       return {
         status: 400,
@@ -178,7 +178,7 @@ const DangNhap = async ({ TenDangNhap, MatKhau }) => {
 const DoiMatKhau = async (MaNhanSu, { MatKhauCu, MatKhauMoi }) => {
   try {
     const taikhoan = await TaiKhoan.findOne({ MaNhanSu });
-    const checkMatKhau = await bcrypt.compare(MatKhauCu, taikhoan.MatKhau);
+    const checkMatKhau = await KiemTraMaHoa(MatKhauCu, taikhoan.MatKhau);
     if (!checkMatKhau) {
       return {
         status: 400,
@@ -226,7 +226,7 @@ const DoiThongTinTaiKhoan = async (
         message: "Thiếu mã nhân sự để cập nhật",
       };
     }
-    const data = await NhanSu.findByIdAndUpdate(MaNhanSu, {
+    await NhanSu.findByIdAndUpdate(MaNhanSu, {
       HoTen,
       SDT,
       Email,
@@ -246,6 +246,133 @@ const DoiThongTinTaiKhoan = async (
     };
   }
 };
+const XemDanhSachNhanVien = async () => {
+  try {
+    const danhSachNhanVien = await TaiKhoan.find({})
+      .select("TenDangNhap NgaySinh KichHoat")
+      .populate({ path: "MaNhanSu", select: "HoTen GioiTinh" })
+      .populate("MaChucVu");
+    return {
+      status: 200,
+      message: "Lấy danh sách nhân viên",
+      data: danhSachNhanVien,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi lấy danh sách nhân viên",
+    };
+  }
+};
+const TimNhanVien = async (TenNhanVien) => {
+  try {
+    const tt = await NhanSu.find({
+      HoTen: { $regex: TenNhanVien, $options: "i" },
+    });
+    if (tt.length === 0) {
+      return {
+        status: 400,
+        message: "Không tìm thấy nhân viên",
+      };
+    }
+    const data = await TaiKhoan.find({ MaNhanSu: tt[0]._id })
+      .select("TenDangNhap KichHoat")
+      .populate("MaNhanSu")
+      .populate("MaChucVu");
+
+    return {
+      status: 200,
+      message: "Lấy thông tin nhân viên",
+      data: data,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi lấy thông tin nhân viên",
+    };
+  }
+};
+const XemThongTinChiTietCuaNhanVien = async (MaTaiKhoan) => {
+  try {
+    const thongTinNhanVien = await TaiKhoan.findById(MaTaiKhoan)
+      .select("TenDangNhap KichHoat")
+      .populate("MaNhanSu")
+      .populate("MaChucVu");
+    return {
+      status: 200,
+      message: "Lấy thống tin chi tiết nhân viên thành công",
+      data: thongTinNhanVien,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi lấy thống tin chi tiết nhân viên",
+    };
+  }
+};
+const DoiMatKhauNhanVien = async ({ MaTaiKhoan, MatKhau }) => {
+  try {
+    const MatKhauMaHoa = await MaHoaMatKhau(MatKhau);
+    console.log(MaTaiKhoan);
+    await TaiKhoan.findByIdAndUpdate(MaTaiKhoan, {
+      MatKhau: MatKhauMaHoa,
+    });
+    return {
+      status: 200,
+      message: "Đổi mật khẩu thành công",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi đổi mật khẩu",
+    };
+  }
+};
+const DoiChucVu = async ({ MaTaiKhoan, MaChucVu }) => {
+  try {
+    await TaiKhoan.findByIdAndUpdate(MaTaiKhoan, {
+      MaChucVu,
+    });
+    return {
+      status: 200,
+      message: "Đổi chức vụ thành công",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi đổi chức vụ",
+    };
+  }
+};
+const MoHoacKhoaTaiKhoan = async ({ MaTaiKhoan }) => {
+  try {
+    const tk = await TaiKhoan.findById(MaTaiKhoan);
+    if (!tk) {
+      return {
+        status: 400,
+        message: "Không tìm thấy tài khoản",
+      };
+    }
+    tk.KichHoat = !tk.KichHoat;
+    await tk.save();
+    return {
+      status: 200,
+      message: "Mở hoặc khoá tài khoản thành công",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi mở/khoá tài khoản",
+    };
+  }
+};
+
 module.exports = {
   ThemChucVu,
   XemChucVu,
@@ -255,4 +382,10 @@ module.exports = {
   DoiMatKhau,
   LayThongTinTaiKhoan,
   DoiThongTinTaiKhoan,
+  XemDanhSachNhanVien,
+  TimNhanVien,
+  XemThongTinChiTietCuaNhanVien,
+  DoiMatKhauNhanVien,
+  DoiChucVu,
+  MoHoacKhoaTaiKhoan,
 };
