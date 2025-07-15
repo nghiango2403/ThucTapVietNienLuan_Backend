@@ -35,7 +35,7 @@
     {
       "TenDangNhap":"vdTenDangNhap",
       "MatKhau": 2
-    } ```
+    }
     ````
   - Response:
     ```json
@@ -65,7 +65,7 @@
     {
     "MatKhauCu":"vd",
     "MatKhauMoi":"vd"
-    }```
+    }
     ````
 
 - **Lấy thông tin tài khoản**
@@ -77,10 +77,10 @@
     "HoTen":"Ngô Hữu Nghĩa",
     "SDT":"0811111111",
     "Email":"Nghia@gmail.com",
-    "NgaySinh":2004-03-24T00:00:00.000+00:00,
+    "NgaySinh":"2004-03-24T00:00:00.000+00:00",
     "DiaChi":"Huế",
     "GioiTinh":"1"
-    }```
+    }
     ````
 - **Đổi thông tin tài khoản**
   - Method: `PUT`
@@ -91,8 +91,8 @@
     "HoTen":"Ngô Hữu Nghĩa",
     "SDT":"0811111111",
     "Email":"Nghia@gmail.com",
-    "NgaySinh":2004-03-24T00:00:00.000+00:00,
+    "NgaySinh":"2004-03-24T00:00:00.000+00:00",
     "DiaChi":"Huế",
     "GioiTinh":"1"
-    }```
+    }
     ````
