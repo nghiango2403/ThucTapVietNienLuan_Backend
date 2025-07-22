@@ -1,4 +1,8 @@
 const service = require("../services/mainservice");
+
+const LaSo = (so) => {
+  return typeof so === "number";
+};
 const themchucvu = async (req, res) => {
   const { TenChucVu } = req.body;
 
@@ -130,6 +134,36 @@ const mohoackhoataikhoan = async (req, res) => {
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
+const themhanghoa = async (req, res) => {
+  try {
+    if (!LaSo(req.body.Gia)) {
+      return res.status(400).json({
+        status: 400,
+        message: "Giá phải là số",
+      });
+    }
+    const result = await service.ThemHangHoa(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const timhanghoa = async (req, res) => {
+  try {
+    const result = await service.TimHangHoa(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const capnhathanghoa = async (req, res) => {
+  try {
+    const result = await service.CapNhatHangHoa(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
 module.exports = {
   themchucvu,
   xemchucvu,
@@ -146,4 +180,7 @@ module.exports = {
   doimatkhaunhanvien,
   doichucvu,
   mohoackhoataikhoan,
+  themhanghoa,
+  timhanghoa,
+  capnhathanghoa,
 };

@@ -4,6 +4,7 @@ const { TaoToken } = require("../utils/jwt");
 const NhanSu = require("../models/nhansu");
 const TaiKhoan = require("../models/taikhoan");
 const ChucVu = require("../models/chucvu");
+const HangHoa = require("../models/hanghoa");
 
 const ThemChucVu = async (TenChucVu) => {
   try {
@@ -372,7 +373,52 @@ const MoHoacKhoaTaiKhoan = async ({ MaTaiKhoan }) => {
     };
   }
 };
-
+const ThemHangHoa = async ({ Ten, Gia }) => {
+  try {
+    await HangHoa.create({ Ten, Gia });
+    return {
+      status: 200,
+      message: "Thêm sản phẩm thành công",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi thêm sản phẩm",
+    };
+  }
+};
+const TimHangHoa = async ({ Ten }) => {
+  try {
+    const sp = await HangHoa.find({ Ten: { $regex: Ten, $options: "i" } });
+    return {
+      status: 200,
+      message: "Thêm sản phẩm thành công",
+      data: sp,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi thêm sản phẩm",
+    };
+  }
+};
+const CapNhatHangHoa = async ({ MaHangHoa, Ten, Gia }) => {
+  try {
+    await HangHoa.findByIdAndUpdate(MaHangHoa, { Ten, Gia });
+    return {
+      status: 200,
+      message: "Cập nhật hàng hóa thành công",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi cập nhật hàng hóa",
+    };
+  }
+};
 module.exports = {
   ThemChucVu,
   XemChucVu,
@@ -388,4 +434,7 @@ module.exports = {
   DoiMatKhauNhanVien,
   DoiChucVu,
   MoHoacKhoaTaiKhoan,
+  ThemHangHoa,
+  TimHangHoa,
+  CapNhatHangHoa,
 };

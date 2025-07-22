@@ -1,21 +1,18 @@
 const mongoose = require("mongoose");
 
 const HoangHoaSchema = mongoose.Schema({
-  ThoiGianLap: { type: datetime, require: true },
-  MaKhuyenMai: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "KhuyenMai",
-    require: true,
-  },
-  HinhThucThanhToan: {
+  Ten: {
     type: String,
-    require: true,
-    enum: ["Trực tiếp", "MoMo", "ZaloPay", "VnPay"],
+    required: true,
   },
-  MaTaiKhoan: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "TaiKhoan",
-    require: true,
+  Gia: {
+    type: Number,
+    required: true,
+  },
+  SoLuong: {
+    type: Number,
+    required: true,
+    default: 0,
   },
 });
 

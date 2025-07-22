@@ -20,7 +20,7 @@
 
 - **Xoá**
   - Method: `DELETE`
-  - Endpoint: `/xoachucvu/:id`
+  - Endpoint: `/xoachucvu`
   - Params:
     - `id`: ID của chức vụ cần xoá
 
@@ -270,5 +270,42 @@
     ```json
     {
       "MaTaiKhoan": "a"
+    }
+    ```
+
+### 📂 Hàng hoá
+
+- **Thêm**
+
+  - Method: `POST`
+  - Endpoint: `/themhanghoa`
+  - Body:
+    ```json
+    {
+      "Ten": "Keo",
+      "Gia": 2000
+    }
+    ```
+
+- **Tìm**
+
+  - Method: `GET`
+  - Endpoint: `/timhanghoa`
+  - Query:
+    ```json
+    {
+      "Ten": "K"
+    }
+    ```
+
+- **Sua**
+  - Method: `PUT`
+  - Endpoint: `/capnhathanghoa`
+  - Body:
+    ```json
+    {
+      "MaHangHoa": "vd",
+      "Ten": "Keo",
+      "Gia": 2000
     }
     ```
