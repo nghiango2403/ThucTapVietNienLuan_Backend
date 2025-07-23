@@ -27,6 +27,10 @@ const initApiRoutes = (app) => {
   router.post("/themhanghoa", apiController.themhanghoa);
   router.get("/timhanghoa", apiController.timhanghoa);
   router.put("/capnhathanghoa", apiController.capnhathanghoa);
+  router.post("/taophieunhaphang", apiController.taophieunhaphang);
+  router.get("/layphieunhaphang", apiController.layphieunhaphang);
+  router.get("/laychitietphieunhaphang", apiController.laychitietphieunhaphang);
+  router.delete("/xoaphieunhaphang", apiController.xoaphieunhaphang);
 
   return app.use("/", router);
 };

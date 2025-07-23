@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const PhieuNhapHangSchema = mongoose.Schema({
-  ThoiGianNhap: { type: String, require: true },
+  ThoiGianNhap: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model("PhieuNhapHang", PhieuNhapHangSchema);

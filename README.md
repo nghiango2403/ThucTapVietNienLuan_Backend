@@ -160,6 +160,13 @@
 - **Lấy danh sách nhân viên**
   - Method: `GET`
   - Endpoint: `/laydanhsachnhanvien`
+  - Query:
+    ```json
+    {
+      "Trang": 1,
+      "Dong": 10
+    }
+    ```
   - Response:
     ```json
     {
@@ -294,7 +301,9 @@
   - Query:
     ```json
     {
-      "Ten": "K"
+      "Ten": "K",
+      "Trang": 1,
+      "Dong": 10
     }
     ```
 
@@ -307,5 +316,98 @@
       "MaHangHoa": "vd",
       "Ten": "Keo",
       "Gia": 2000
+    }
+    ```
+
+### 📂 Quản lý nhập hàng
+
+- **Tạo phiếu nhập hàng**
+
+  - Method: `POST`
+  - Endpoint: `/taophieunhaphang`
+  - Body:
+    ```json
+    {
+      "DanhSach": [
+        {
+          "MaHangHoa": "687ee6b4d5ae997ff194ea37",
+          "SoLuong": 2,
+          "TienHang": 30000
+        }
+      ]
+    }
+    ```
+
+- **Lấy thời gian của các lần nhập hàng**
+
+  - Method: `GET`
+  - Endpoint: `/layphieunhaphang`
+  - Query:
+
+    ```json
+    {
+      "Trang": 1,
+      "Dong": 10
+    }
+    ```
+
+  - Response:
+
+  ```json
+  {
+    "status": 200,
+    "message": "Lấy danh sách phiếu nhập hàng thành công",
+    "data": [
+      {
+        "_id": "68807fe8df9445da2bc4efb6",
+        "ThoiGianNhap": "2025-07-23T06:23:36.422Z",
+        "__v": 0
+      }
+    ]
+  }
+  ```
+
+- **Lấy chi tiết phiếu nhập hàng**
+
+  - Method: `GET`
+  - Endpoint: `/laychitietphieunhaphang`
+  - Query:
+
+    ```json
+    {
+      "MaPhieuNhapHang": "a"
+    }
+    ```
+
+  - Response:
+
+  ```json
+  {
+    "status": 200,
+    "message": "Lấy thành công",
+    "data": [
+      {
+        "_id": "68807fe8df9445da2bc4efb9",
+        "MaPhieuNhapHang": "68807fe8df9445da2bc4efb6",
+        "MaHangHoa": {
+          "_id": "687ef46b6033447c6807cf95",
+          "Ten": "Muối",
+          "Gia": 2000
+        },
+        "SoLuong": 3,
+        "TienHang": 20000,
+        "__v": 0
+      }
+    ]
+  }
+  ```
+
+- **Xoá**
+  - Method: `DELETE`
+  - Endpoint: `/xoachucvu`
+  - Body:
+    ```json
+    {
+      "MaPhieuNhapHang": "687f35ab6d75b06ac7555458"
     }
     ```

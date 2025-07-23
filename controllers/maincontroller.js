@@ -75,7 +75,7 @@ const doithongtintaikhoan = async (req, res) => {
 };
 const xemdanhsachnhanvien = async (req, res) => {
   try {
-    const result = await service.XemDanhSachNhanVien();
+    const result = await service.XemDanhSachNhanVien(req.query);
     return res.status(result.status).json(result);
   } catch (error) {
     return res.status(400).json({ message: "Lỗi service" });
@@ -158,7 +158,55 @@ const timhanghoa = async (req, res) => {
 };
 const capnhathanghoa = async (req, res) => {
   try {
+    if (!LaSo(req.body.Gia)) {
+      return res.status(400).json({
+        status: 400,
+        message: "Giá phải là số",
+      });
+    }
     const result = await service.CapNhatHangHoa(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const taophieunhaphang = async (req, res) => {
+  try {
+    for (const item of req.body.DanhSach) {
+      if (!LaSo(item.SoLuong) || !LaSo(item.TienHang)) {
+        return res.status(400).json({
+          status: 400,
+          message: "Số lượng và tiền phải là kiểu số",
+        });
+      }
+    }
+    const result = await service.TaoPhieuNhapHang(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const layphieunhaphang = async (req, res) => {
+  try {
+    const result = await service.LayPhieuNhapHang(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const laychitietphieunhaphang = async (req, res) => {
+  try {
+    const result = await service.LayChiTietPhieuNhapHang(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xoaphieunhaphang = async (req, res) => {
+  try {
+    const result = await service.XoaPhieuNhapHang(req.body);
     return res.status(result.status).json(result);
   } catch (error) {
     return res.status(400).json({ message: "Lỗi service" });
@@ -183,4 +231,8 @@ module.exports = {
   themhanghoa,
   timhanghoa,
   capnhathanghoa,
+  taophieunhaphang,
+  layphieunhaphang,
+  laychitietphieunhaphang,
+  xoaphieunhaphang,
 };

@@ -5,6 +5,8 @@ const NhanSu = require("../models/nhansu");
 const TaiKhoan = require("../models/taikhoan");
 const ChucVu = require("../models/chucvu");
 const HangHoa = require("../models/hanghoa");
+const PhieuNhapHang = require("../models/phieunhaphang");
+const ChiTietPhieuNhapHang = require("../models/chitietphieunhaphang");
 
 const ThemChucVu = async (TenChucVu) => {
   try {
@@ -247,12 +249,14 @@ const DoiThongTinTaiKhoan = async (
     };
   }
 };
-const XemDanhSachNhanVien = async () => {
+const XemDanhSachNhanVien = async ({ Trang, Dong }) => {
   try {
     const danhSachNhanVien = await TaiKhoan.find({})
       .select("TenDangNhap NgaySinh KichHoat")
       .populate({ path: "MaNhanSu", select: "HoTen GioiTinh" })
-      .populate("MaChucVu");
+      .populate("MaChucVu")
+      .skip((Trang - 1) * Dong)
+      .limit(Dong);
     return {
       status: 200,
       message: "Lấy danh sách nhân viên",
@@ -388,9 +392,11 @@ const ThemHangHoa = async ({ Ten, Gia }) => {
     };
   }
 };
-const TimHangHoa = async ({ Ten }) => {
+const TimHangHoa = async ({ Ten, Trang, Dong }) => {
   try {
-    const sp = await HangHoa.find({ Ten: { $regex: Ten, $options: "i" } });
+    const sp = await HangHoa.find({ Ten: { $regex: Ten, $options: "i" } })
+      .skip((Trang - 1) * Dong)
+      .limit(Dong);
     return {
       status: 200,
       message: "Thêm sản phẩm thành công",
@@ -419,6 +425,140 @@ const CapNhatHangHoa = async ({ MaHangHoa, Ten, Gia }) => {
     };
   }
 };
+const TaoPhieuNhapHang = async ({ DanhSach }) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const [phieunhaphang] = await PhieuNhapHang.create([{}], { session });
+    const chitietpnh = DanhSach.map((item) => {
+      return {
+        MaHangHoa: item.MaHangHoa,
+        SoLuong: item.SoLuong,
+        TienHang: item.TienHang,
+        MaPhieuNhapHang: phieunhaphang._id,
+      };
+    });
+    await ChiTietPhieuNhapHang.create(chitietpnh);
+    for (const item of DanhSach) {
+      await HangHoa.updateOne(
+        { _id: item.MaHangHoa },
+        { $inc: { SoLuong: item.SoLuong } },
+        { session }
+      );
+    }
+    await session.commitTransaction();
+    session.endSession();
+    return {
+      status: 200,
+      message: "Tạo phiếu nhập hàng thành công",
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.log(error);
+    return {
+      status: 400,
+      message: "Loi khi tạo phiếu nhập hàng",
+    };
+  }
+};
+const LayPhieuNhapHang = async ({ Trang, Dong }) => {
+  try {
+    const phieunhaphang = await PhieuNhapHang.find({})
+      .sort({
+        ThoiGianNhap: -1,
+      })
+      .skip((Trang - 1) * Dong)
+      .limit(Dong);
+    console.log(phieunhaphang);
+    return {
+      status: 200,
+      message: "Lấy danh sách phiếu nhập hàng thành công",
+      data: phieunhaphang,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lấy danh sách phiếu nhập hàng thất bại",
+    };
+  }
+};
+const LayChiTietPhieuNhapHang = async ({ MaPhieuNhapHang }) => {
+  try {
+    const chitietphieunhaphang = await ChiTietPhieuNhapHang.find({
+      MaPhieuNhapHang,
+    }).populate({ path: "MaHangHoa", select: "Ten Gia" });
+    return {
+      status: 200,
+      message: "Lấy thành công",
+      data: chitietphieunhaphang,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lấy danh sách chi tiết phiếu nhập hàng thất bại",
+    };
+  }
+};
+const XoaPhieuNhapHang = async ({ MaPhieuNhapHang }) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const phieunhaphang = await PhieuNhapHang.findById(MaPhieuNhapHang).session(
+      session
+    );
+    if (!phieunhaphang) {
+      await session.abortTransaction();
+      session.endSession();
+      return {
+        status: 400,
+        message: "Phiếu nhập hàng không tồn tại",
+      };
+    }
+
+    const chitietphieunhaphang = await ChiTietPhieuNhapHang.find({
+      MaPhieuNhapHang,
+    }).session(session);
+
+    for (const item of chitietphieunhaphang) {
+      const hanghoa = await HangHoa.findById(item.MaHangHoa).session(session);
+      if (!hanghoa) {
+        throw new Error(`Hàng hóa với ID ${item.MaHangHoa} không tồn tại`);
+      }
+
+      if (hanghoa.SoLuong < item.SoLuong) {
+        throw new Error(
+          `Số lượng hàng hóa (${hanghoa.SoLuong}) trong kho nhỏ hơn số lượng (${item.SoLuong}) cần trừ`
+        );
+      }
+      await HangHoa.updateOne(
+        { _id: item.MaHangHoa },
+        { $inc: { SoLuong: -item.SoLuong } },
+        { session }
+      );
+    }
+
+    await ChiTietPhieuNhapHang.deleteMany({ MaPhieuNhapHang }, { session });
+    await PhieuNhapHang.deleteOne({ _id: MaPhieuNhapHang }, { session });
+
+    await session.commitTransaction();
+    session.endSession();
+    return {
+      status: 200,
+      message: "Xóa phiếu nhập hàng thành công",
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.log(error);
+    return {
+      status: 400,
+      message: error.message || "Lỗi khi xoá phiếu nhập hàng",
+    };
+  }
+};
 module.exports = {
   ThemChucVu,
   XemChucVu,
@@ -437,4 +577,8 @@ module.exports = {
   ThemHangHoa,
   TimHangHoa,
   CapNhatHangHoa,
+  TaoPhieuNhapHang,
+  LayPhieuNhapHang,
+  LayChiTietPhieuNhapHang,
+  XoaPhieuNhapHang,
 };

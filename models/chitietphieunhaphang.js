@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const HoangHoaSchema = mongoose.Schema({
+const ChiTietPhieuNhapHangSchema = mongoose.Schema({
   MaPhieuNhapHang: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "PhieuNhapHang",
@@ -15,4 +15,7 @@ const HoangHoaSchema = mongoose.Schema({
   TienHang: { type: Number, require: true },
 });
 
-module.exports = mongoose.model("HangHoa", HoangHoaSchema);
+module.exports = mongoose.model(
+  "ChiTietPhieuNhapHang",
+  ChiTietPhieuNhapHangSchema
+);
