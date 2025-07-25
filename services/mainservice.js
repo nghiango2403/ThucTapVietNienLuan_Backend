@@ -7,6 +7,7 @@ const ChucVu = require("../models/chucvu");
 const HangHoa = require("../models/hanghoa");
 const PhieuNhapHang = require("../models/phieunhaphang");
 const ChiTietPhieuNhapHang = require("../models/chitietphieunhaphang");
+const KhuyenMai = require("../models/khuyenmai");
 
 const ThemChucVu = async (TenChucVu) => {
   try {
@@ -559,6 +560,101 @@ const XoaPhieuNhapHang = async ({ MaPhieuNhapHang }) => {
     };
   }
 };
+const ThemKhuyenMai = async ({
+  TenKhuyenMai,
+  NgayBatDau,
+  NgayKetThuc,
+  TienKhuyenMai,
+  DieuKien,
+}) => {
+  try {
+    const km = await KhuyenMai.create({
+      TenKhuyenMai,
+      NgayBatDau,
+      NgayKetThuc,
+      TienKhuyenMai,
+      DieuKien,
+    });
+    return {
+      status: 200,
+      message: "Thêm khuyến mãi thành công",
+      data: km,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi thêm khuyến mãi",
+    };
+  }
+};
+const CapNhatKhuyenMai = async ({
+  MaKhuyenMai,
+  TenKhuyenMai,
+  NgayBatDau,
+  NgayKetThuc,
+  TienKhuyenMai,
+  DieuKien,
+}) => {
+  try {
+    await KhuyenMai.updateOne(
+      { _id: MaKhuyenMai },
+      { TenKhuyenMai, NgayBatDau, NgayKetThuc, TienKhuyenMai, DieuKien }
+    );
+    return {
+      status: 200,
+      message: "Cập nhật khuyến mãi thành công",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi cập nhật khuyến mãi",
+    };
+  }
+};
+const XemKhuyenMai = async ({ Trang, Dong }) => {
+  try {
+    const km = await KhuyenMai.find({})
+      .sort({ NgayKetThuc: -1 })
+      .skip((Trang - 1) * Dong)
+      .limit(Dong);
+    return {
+      status: 200,
+      message: "Lấy danh sách khuyến mãi thành công",
+      data: km,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lấy danh sách khuyến mãi thất bại",
+    };
+  }
+};
+const XemKhuyenMaiConHoatDong = async ({ Trang, Dong }) => {
+  try {
+    const today = new Date();
+    const km = await KhuyenMai.find({
+      NgayBatDau: { $lte: today },
+      NgayKetThuc: { $gte: today },
+    })
+      .sort({ NgayKetThuc: -1 })
+      .skip((Trang - 1) * Dong)
+      .limit(Dong);
+    return {
+      status: 200,
+      message: "Lấy danh sách khuyến mái hệ thống",
+      data: km,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lấy danh sách khuyến mái hệ thống thất bại",
+    };
+  }
+};
 module.exports = {
   ThemChucVu,
   XemChucVu,
@@ -581,4 +677,8 @@ module.exports = {
   LayPhieuNhapHang,
   LayChiTietPhieuNhapHang,
   XoaPhieuNhapHang,
+  ThemKhuyenMai,
+  CapNhatKhuyenMai,
+  XemKhuyenMai,
+  XemKhuyenMaiConHoatDong,
 };

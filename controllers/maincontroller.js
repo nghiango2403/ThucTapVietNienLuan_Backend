@@ -212,6 +212,50 @@ const xoaphieunhaphang = async (req, res) => {
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
+const themkhuyenmai = async (req, res) => {
+  try {
+    if (!LaSo(req.body.TienKhuyenMai) || !LaSo(req.body.DieuKien)) {
+      return res.status(400).json({
+        status: 400,
+        message: "Tiền khuyến mãi và điều kiện phải là số",
+      });
+    }
+    const result = await service.ThemKhuyenMai(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const capnhatkhuyenmai = async (req, res) => {
+  try {
+    if (!LaSo(req.body.TienKhuyenMai) || !LaSo(req.body.DieuKien)) {
+      return res.status(400).json({
+        status: 400,
+        message: "Tiền khuyến mãi và điều kiện phải là số",
+      });
+    }
+    const result = await service.CapNhatKhuyenMai(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xemkhuyenmai = async (req, res) => {
+  try {
+    const result = await service.XemKhuyenMai(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xemkhuyenmaiconhoatdong = async (req, res) => {
+  try {
+    const result = await service.XemKhuyenMaiConHoatDong(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
 module.exports = {
   themchucvu,
   xemchucvu,
@@ -235,4 +279,8 @@ module.exports = {
   layphieunhaphang,
   laychitietphieunhaphang,
   xoaphieunhaphang,
+  themkhuyenmai,
+  capnhatkhuyenmai,
+  xemkhuyenmai,
+  xemkhuyenmaiconhoatdong,
 };

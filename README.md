@@ -411,3 +411,58 @@
       "MaPhieuNhapHang": "687f35ab6d75b06ac7555458"
     }
     ```
+
+### 📂 Quản lý khuyến mãi
+
+- **Thêm**
+
+  - Method: `POST`
+  - Endpoint: `/themkhuyenmai`
+  - Body:
+    ```json
+    {
+      "TenKhuyenMai": "test",
+      "NgayBatDau": "2025-07-25",
+      "NgayKetThuc": "2025-08-25",
+      "TienKhuyenMai": 1000,
+      "DieuKien": 10000
+    }
+    ```
+
+- **Cập nhật**
+  - Method: `PUT`
+  - Endpoint: `/capnhatkhuyenmai`
+  - Body:
+    ```json
+    {
+      "MaKhuyenMai": "6882d3bf36c21e47845546e2",
+      "TenKhuyenMai": "test 1",
+      "NgayBatDau": "2025-07-25",
+      "NgayKetThuc": "2025-08-25",
+      "TienKhuyenMai": 1000,
+      "DieuKien": 10000
+    }
+    ```
+- **Lấy khuyến mãi**
+
+  - Method: `GET`
+  - Endpoint: `/laykhuyenmai`
+  - Query:
+    ```json
+    {
+      "Trang": 1,
+      "Dong": 10
+    }
+    ```
+
+- **Lấy khuyến mãi còn hoạt động**
+
+  - Method: `GET`
+  - Endpoint: `/laykhuyenmaiconhoatdong`
+  - Query:
+    ```json
+    {
+      "Trang": 1,
+      "Dong": 10
+    }
+    ```
