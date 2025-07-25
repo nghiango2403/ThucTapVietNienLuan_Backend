@@ -42,7 +42,7 @@ const initApiRoutes = (app) => {
     apiController.xemdanhsachhoadoncuanhanvien
   );
   router.get("/xemchitiethoadon", apiController.xemchitiethoadon);
-  router.put("/xoahoadon", apiController.xoahoadon);
+  router.delete("/xoahoadon", apiController.xoahoadon);
 
   return app.use("/", router);
 };

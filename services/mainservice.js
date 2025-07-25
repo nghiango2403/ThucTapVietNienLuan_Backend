@@ -722,9 +722,16 @@ const ThemHoaDon = async (
     };
   }
 };
-const XemDanhSachHoaDon = async ({ Trang, Dong }) => {
+const XemDanhSachHoaDon = async ({ Trang, Dong, Thang, Nam }) => {
   try {
-    const hd = await HoaDon.find({})
+    const BatDau = new Date(Nam, Thang - 1, 1);
+    const KetThuc = new Date(Nam, Thang, 1);
+    const hd = await HoaDon.find({
+      NgayLap: {
+        $gte: BatDau,
+        $lt: KetThuc,
+      },
+    })
       .sort({ NgayLap: -1 })
       .skip((Trang - 1) * Dong)
       .limit(Dong);
@@ -741,9 +748,20 @@ const XemDanhSachHoaDon = async ({ Trang, Dong }) => {
     };
   }
 };
-const XemDanhSachHoaDonCuaNhanVien = async ({ Trang, Dong }, MaNhanVien) => {
+const XemDanhSachHoaDonCuaNhanVien = async (
+  { Trang, Dong, Thang, Nam },
+  MaNhanVien
+) => {
   try {
-    const hd = await HoaDon.find({ MaNhanVien })
+    const BatDau = new Date(Nam, Thang - 1, 1);
+    const KetThuc = new Date(Nam, Thang, 1);
+    const hd = await HoaDon.find({
+      MaNhanVien,
+      NgayLap: {
+        $gte: BatDau,
+        $lt: KetThuc,
+      },
+    })
       .sort({ NgayLap: -1 })
       .skip((Trang - 1) * Dong)
       .limit(Dong);

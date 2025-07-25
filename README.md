@@ -466,3 +466,71 @@
       "Dong": 10
     }
     ```
+
+### 📂 Quản lý hoá đơn
+
+- **Thêm**
+
+  - Method: `POST`
+  - Endpoint: `/themhoadon`
+  - Body:
+    ```json
+    {
+      "MaKhuyenMai": "a",
+      "HinhThucThanhToan": "Trực tiếp",
+      "ChiTietHD": [
+        {
+          "MaHangHoa": "6882e7fd702c1889f01d1815",
+          "SoLuong": 2
+        },
+        {
+          "MaHangHoa": "6882e808702c1889f01d1817",
+          "SoLuong": 2
+        }
+      ]
+    }
+    ```
+
+- **xem danh sách hoá đơn**
+  - Method: `GET`
+  - Endpoint: `/xemdanhsachhoadon`
+  - Query:
+    ```json
+    {
+      "Trang": 1,
+      "Dong": 5,
+      "Thang": 7,
+      "Nam": 2025
+    }
+    ```
+- **xem danh sách hoá đơn của tài khoản đang đăng nhập tạo**
+  - Method: `GET`
+  - Endpoint: `/xemdanhsachhoadoncuanhanvien`
+  - Query:
+    ```json
+    {
+      "Trang": 1,
+      "Dong": 5,
+      "Thang": 7,
+      "Nam": 2025
+    }
+    ```
+- **xem chi tiết hoá đơn**
+  - Method: `GET`
+  - Endpoint: `/xemchitiethoadon`
+  - Query:
+    ```json
+    {
+      "MaHoaDon": "a"
+    }
+    ```
+- **Xoá**
+
+  - Method: `DELETE`
+  - Endpoint: `/xoahoadon`
+  - Body:
+    ```json
+    {
+      "MaHoaDon": "a"
+    }
+    ```
