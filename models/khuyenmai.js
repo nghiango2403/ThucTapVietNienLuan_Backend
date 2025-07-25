@@ -5,7 +5,7 @@ const KhuyenMaiSchema = mongoose.Schema({
   NgayBatDau: { type: Date, require: true },
   NgayKetThuc: { type: Date, require: true },
   TienKhuyenMai: { type: Number, require: true },
-  DieuKien: { type: String, require: true },
+  DieuKien: { type: Number, require: true },
 });
 
 module.exports = mongoose.model("KhuyenMai", KhuyenMaiSchema);

@@ -7,7 +7,11 @@ const XacThuc = (req, res, next) => {
   let token = req.headers.authorization.split(" ")[1];
   let decode = jwt.XacThucToken(token, process.env.ACCESS_TOKEN_SECRET);
   if (decode) {
-    req.user = { MaChucVu: decode.MaChucVu, MaNhanSu: decode.MaNhanSu };
+    req.user = {
+      MaChucVu: decode.MaChucVu,
+      MaNhanSu: decode.MaNhanSu,
+      MaNhanVien: decode.MaNhanVien,
+    };
     next();
   } else {
     res.status(401).json({

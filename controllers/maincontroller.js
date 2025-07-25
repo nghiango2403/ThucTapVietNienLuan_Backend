@@ -255,6 +255,50 @@ const xemkhuyenmaiconhoatdong = async (req, res) => {
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
+const themhoadon = async (req, res) => {
+  try {
+    const result = await service.ThemHoaDon(req.body, req.user.MaNhanVien);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xemdanhsachhoadon = async (req, res) => {
+  try {
+    const result = await service.XemDanhSachHoaDon(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xemdanhsachhoadoncuanhanvien = async (req, res) => {
+  try {
+    const result = await service.XemDanhSachHoaDonCuaNhanVien(
+      req.query,
+      req.user.MaNhanVien
+    );
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xemchitiethoadon = async (req, res) => {
+  try {
+    const result = await service.XemChiTietHoaDon(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xoahoadon = async (req, res) => {
+  try {
+    const result = await service.XoaHoaDon(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
 module.exports = {
   themchucvu,
   xemchucvu,
@@ -282,4 +326,9 @@ module.exports = {
   capnhatkhuyenmai,
   xemkhuyenmai,
   xemkhuyenmaiconhoatdong,
+  themhoadon,
+  xemdanhsachhoadon,
+  xemdanhsachhoadoncuanhanvien,
+  xemchitiethoadon,
+  xoahoadon,
 };

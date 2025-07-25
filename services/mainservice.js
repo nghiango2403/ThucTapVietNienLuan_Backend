@@ -8,6 +8,8 @@ const HangHoa = require("../models/hanghoa");
 const PhieuNhapHang = require("../models/phieunhaphang");
 const ChiTietPhieuNhapHang = require("../models/chitietphieunhaphang");
 const KhuyenMai = require("../models/khuyenmai");
+const HoaDon = require("../models/hoadon");
+const ChiTietHoaDon = require("../models/chitiethoadon");
 
 const ThemChucVu = async (TenChucVu) => {
   try {
@@ -151,6 +153,7 @@ const DangNhap = async ({ TenDangNhap, MatKhau }) => {
       ChucVu: taikhoan.MaChucVu.TenChucVu,
       MaChucVu: taikhoan.MaChucVu._id,
       MaNhanSu: taikhoan.MaNhanSu._id,
+      MaNhanVien: taikhoan._id,
     };
     const accessToken = await TaoToken(
       ThongTin,
@@ -655,6 +658,158 @@ const XemKhuyenMaiConHoatDong = async ({ Trang, Dong }) => {
     };
   }
 };
+const ThemHoaDon = async (
+  { MaKhuyenMai, HinhThucThanhToan, ChiTietHD },
+  MaNhanVien
+) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    var tienhd = 0;
+    for (const item of ChiTietHD) {
+      const a = await HangHoa.findById(item.MaHangHoa).session(session);
+      tienhd += a.Gia * item.SoLuong;
+    }
+    if (MaKhuyenMai) {
+      const km = await KhuyenMai.findById(MaKhuyenMai).session(session);
+      if (km.DieuKien > tienhd) {
+        return {
+          status: 409,
+          message: "Tiền hoá đơn chưa đủ để áp dụng khuyến mãi",
+        };
+      }
+    } else {
+      MaKhuyenMai = null;
+    }
+    const [hoadon] = await HoaDon.create(
+      [{ MaKhuyenMai, HinhThucThanhToan, MaNhanVien }],
+      { session }
+    );
+    for (const item of ChiTietHD) {
+      const hanghoa = await HangHoa.findById(item.MaHangHoa).session(session);
+      await ChiTietHoaDon.create(
+        [
+          {
+            MaHoaDon: hoadon._id,
+            MaHangHoa: item.MaHangHoa,
+            SoLuong: item.SoLuong,
+            DonGia: hanghoa.Gia,
+          },
+        ],
+        { session }
+      );
+      await HangHoa.updateOne(
+        { _id: item.MaHangHoa },
+        { $inc: { SoLuong: -item.SoLuong } },
+        { session }
+      );
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+    return {
+      status: 200,
+      message: "Tạo hóa đơn thành công",
+      data: hoadon,
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi tạo hóa đơn",
+    };
+  }
+};
+const XemDanhSachHoaDon = async ({ Trang, Dong }) => {
+  try {
+    const hd = await HoaDon.find({})
+      .sort({ NgayLap: -1 })
+      .skip((Trang - 1) * Dong)
+      .limit(Dong);
+    return {
+      status: 200,
+      message: "Lấy danh sách hóa đơn thành công",
+      data: hd,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lấy danh sách hóa đơn thất bại",
+    };
+  }
+};
+const XemDanhSachHoaDonCuaNhanVien = async ({ Trang, Dong }, MaNhanVien) => {
+  try {
+    const hd = await HoaDon.find({ MaNhanVien })
+      .sort({ NgayLap: -1 })
+      .skip((Trang - 1) * Dong)
+      .limit(Dong);
+    return {
+      status: 200,
+      message: "Lấy danh sách hóa đơn của nhân viên thành công",
+      data: hd,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lấy danh sách hóa đơn của nhân viên thất bại",
+    };
+  }
+};
+const XemChiTietHoaDon = async ({ MaHoaDon }) => {
+  try {
+    const hd = await ChiTietHoaDon.find({ MaHoaDon }).populate({
+      path: "MaHangHoa",
+      select: "-SoLuong",
+    });
+    return {
+      status: 200,
+      message: "Lấy chi tiết hóa đơn thành công",
+      data: hd,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lấy chi tiết hóa đơn thất bại",
+    };
+  }
+};
+const XoaHoaDon = async ({ MaHoaDon }) => {
+  try {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    const ct = await ChiTietHoaDon.find({ MaHoaDon }).session(session);
+    for (const item of ct) {
+      await HangHoa.updateOne(
+        { _id: item.MaHangHoa },
+        { $inc: { SoLuong: item.SoLuong } },
+        { session }
+      );
+    }
+
+    await ChiTietHoaDon.deleteMany({ MaHoaDon }, { session });
+    await HoaDon.deleteOne({ _id: MaHoaDon }, { session });
+    await session.commitTransaction();
+    session.endSession();
+    return {
+      status: 200,
+      message: "Xóa hóa đơn thành công",
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.log(error);
+    return {
+      status: 400,
+      message: "Xóa hóa đơn thất bại",
+    };
+  }
+};
 module.exports = {
   ThemChucVu,
   XemChucVu,
@@ -681,4 +836,9 @@ module.exports = {
   CapNhatKhuyenMai,
   XemKhuyenMai,
   XemKhuyenMaiConHoatDong,
+  ThemHoaDon,
+  XemDanhSachHoaDon,
+  XemDanhSachHoaDonCuaNhanVien,
+  XemChiTietHoaDon,
+  XoaHoaDon,
 };
