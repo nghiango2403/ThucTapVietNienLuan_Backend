@@ -40,7 +40,6 @@ const themnhanvienvataikhoan = async (req, res) => {
 };
 const dangnhap = async (req, res) => {
   try {
-    console.log("a");
     const result = await service.DangNhap(req.body);
     return res.status(result.status).json(result);
   } catch (error) {
@@ -137,8 +136,8 @@ const mohoackhoataikhoan = async (req, res) => {
 const themhanghoa = async (req, res) => {
   try {
     if (!LaSo(req.body.Gia)) {
-      return res.status(400).json({
-        status: 400,
+      return res.status(409).json({
+        status: 409,
         message: "Giá phải là số",
       });
     }
@@ -174,8 +173,8 @@ const taophieunhaphang = async (req, res) => {
   try {
     for (const item of req.body.DanhSach) {
       if (!LaSo(item.SoLuong) || !LaSo(item.TienHang)) {
-        return res.status(400).json({
-          status: 400,
+        return res.status(409).json({
+          status: 409,
           message: "Số lượng và tiền phải là kiểu số",
         });
       }
@@ -215,8 +214,8 @@ const xoaphieunhaphang = async (req, res) => {
 const themkhuyenmai = async (req, res) => {
   try {
     if (!LaSo(req.body.TienKhuyenMai) || !LaSo(req.body.DieuKien)) {
-      return res.status(400).json({
-        status: 400,
+      return res.status(409).json({
+        status: 409,
         message: "Tiền khuyến mãi và điều kiện phải là số",
       });
     }
@@ -229,8 +228,8 @@ const themkhuyenmai = async (req, res) => {
 const capnhatkhuyenmai = async (req, res) => {
   try {
     if (!LaSo(req.body.TienKhuyenMai) || !LaSo(req.body.DieuKien)) {
-      return res.status(400).json({
-        status: 400,
+      return res.status(409).json({
+        status: 409,
         message: "Tiền khuyến mãi và điều kiện phải là số",
       });
     }
