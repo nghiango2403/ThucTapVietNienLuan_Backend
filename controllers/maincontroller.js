@@ -1,4 +1,5 @@
 const service = require("../services/mainservice");
+const thanhtoanservice = require("../services/thanhtoanservice");
 
 const LaSo = (so) => {
   return typeof so === "number";
@@ -299,6 +300,23 @@ const xoahoadon = async (req, res) => {
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
+const taothanhtoanmomo = async (req, res) => {
+  try {
+    const result = await thanhtoanservice.TaoThanhToanMoMo(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const sulythanhtoanmomo = async (req, res) => {
+  try {
+    const result = await thanhtoanservice.SuLyThanhToanMoMo(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
 module.exports = {
   themchucvu,
   xemchucvu,
@@ -331,4 +349,6 @@ module.exports = {
   xemdanhsachhoadoncuanhanvien,
   xemchitiethoadon,
   xoahoadon,
+  taothanhtoanmomo,
+  sulythanhtoanmomo,
 };

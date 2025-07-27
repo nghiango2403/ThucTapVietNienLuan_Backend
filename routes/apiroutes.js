@@ -6,6 +6,7 @@ const middleware = require("../middlewares/xacthucvaphanquyen");
 
 const initApiRoutes = (app) => {
   router.post("/dangnhap", apiController.dangnhap);
+  router.post("/sulythanhtoanmomo", apiController.sulythanhtoanmomo);
   router.use(middleware.XacThuc);
   router.post("/themchucvu", apiController.themchucvu);
   router.get("/laychucvu", apiController.xemchucvu);
@@ -43,6 +44,7 @@ const initApiRoutes = (app) => {
   );
   router.get("/xemchitiethoadon", apiController.xemchitiethoadon);
   router.delete("/xoahoadon", apiController.xoahoadon);
+  router.post("/taothanhtoanmomo", apiController.taothanhtoanmomo);
 
   return app.use("/", router);
 };
