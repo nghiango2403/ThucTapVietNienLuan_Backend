@@ -259,6 +259,26 @@ const xemkhuyenmaiconhoatdong = async (req, res) => {
 const themhoadon = async (req, res) => {
   try {
     const result = await service.ThemHoaDon(req.body, req.user.MaNhanVien);
+    if (result.status !== 200) {
+      return res.status(result.status).json(result);
+    }
+    if (req.body.HinhThucThanhToan === "MoMo") {
+      response = await thanhtoanservice.TaoThanhToanMoMo(
+        result.data.MaHoaDon,
+        result.data.items
+      );
+      return res.status(response.status).json(response);
+    }
+    if (req.body.HinhThucThanhToan === "ZaLoPay") {
+      response = await thanhtoanservice.TaoThanhToanZaLoPay(
+        result.data.MaHoaDon,
+        result.data.items
+      );
+      if (req.body.HinhThucThanhToan === "VnPay") {
+        response = await thanhtoanservice.TaoThanhToanVnPay(req, result.data);
+      }
+      return res.status(response.status).json(response);
+    }
     return res.status(result.status).json(result);
   } catch (error) {
     console.log(error);
@@ -302,18 +322,117 @@ const xoahoadon = async (req, res) => {
 };
 const taothanhtoanmomo = async (req, res) => {
   try {
-    const result = await thanhtoanservice.TaoThanhToanMoMo(req.body);
+    const result1 = await service.XemChiTietHoaDon(req.body);
+    if (result1.status !== 200) {
+      return res.status(result1.status).json(result1);
+    }
+    const response = await thanhtoanservice.TaoThanhToanMoMo(
+      req.body.MaHoaDon,
+      result1.data
+    );
+    return res.status(response.status).json(response);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xulythanhtoanmomo = async (req, res) => {
+  try {
+    const result = await thanhtoanservice.XuLyThanhToanMoMo(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const kiemtratrangthaithanhtoanmomo = async (req, res) => {
+  try {
+    const result = await thanhtoanservice.KiemTraTrangThaiThanhToanMoMo(
+      req.body
+    );
     return res.status(result.status).json(result);
   } catch (error) {
     console.log(error);
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
-const sulythanhtoanmomo = async (req, res) => {
+const taothanhtoanzalopay = async (req, res) => {
   try {
-    const result = await thanhtoanservice.SuLyThanhToanMoMo(req.body);
+    const result1 = await service.XemChiTietHoaDon(req.body);
+    if (result1.status !== 200) {
+      return res.status(result1.status).json(result1);
+    }
+    const result = await thanhtoanservice.TaoThanhToanZaLoPay(
+      req.body.MaHoaDon,
+      result1.data
+    );
     return res.status(result.status).json(result);
   } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xulythanhtoanzalopay = async (req, res) => {
+  try {
+    const result = await thanhtoanservice.XuLyThanhToanZaLoPay(req.body);
+    return res.json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const kiemtratrangthaithanhtoanzalopay = async (req, res) => {
+  try {
+    const result = await thanhtoanservice.KiemTraTrangThaiThanhToanZaLoPay(
+      req.body.MaHoaDon
+    );
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const taothanhtoanvnpay = async (req, res) => {
+  try {
+    const result1 = await service.XemChiTietHoaDon(req.body);
+    if (result1.status !== 200) {
+      return res.status(result1.status).json(result1);
+    }
+    const result = await thanhtoanservice.TaoThanhToanVnPay(req, result1.data);
+    return res
+      .status(200)
+      .json({ status: 200, message: "Thành công", data: result });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xulythanhtoanvnpay = async (req, res) => {
+  try {
+    const result = await thanhtoanservice.XuLyThanhToanVnPay(req);
+
+    if (!result) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Không xác định kết quả thanh toán" });
+    }
+
+    // Nếu đang render view "success", hãy chắc chắn view này tồn tại
+    console.log("Kết quả thanh toán:", result);
+    return res.json({ success: true, code: result });
+  } catch (error) {
+    console.error("Lỗi xử lý thanh toán:", error);
+    return res
+      .status(400)
+      .json({ success: false, message: "Sai chữ ký (invalid checksum)" });
+  }
+};
+
+const kiemtratrangthaithanhtoanvnpay = async (req, res) => {
+  try {
+    console.log(req.body);
+    const result = await thanhtoanservice.KiemTraTrangThaiThanhToanVnPay(req);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
@@ -350,5 +469,12 @@ module.exports = {
   xemchitiethoadon,
   xoahoadon,
   taothanhtoanmomo,
-  sulythanhtoanmomo,
+  xulythanhtoanmomo,
+  kiemtratrangthaithanhtoanmomo,
+  taothanhtoanzalopay,
+  xulythanhtoanzalopay,
+  kiemtratrangthaithanhtoanzalopay,
+  taothanhtoanvnpay,
+  xulythanhtoanvnpay,
+  kiemtratrangthaithanhtoanvnpay,
 };

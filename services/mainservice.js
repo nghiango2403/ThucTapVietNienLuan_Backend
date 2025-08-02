@@ -704,13 +704,15 @@ const ThemHoaDon = async (
         { session }
       );
     }
-
     await session.commitTransaction();
     session.endSession();
+    const CTHD = await XemChiTietHoaDon({ MaHoaDon: hoadon._id });
+
+    console.log(hoadon._id);
     return {
       status: 200,
       message: "Tạo hóa đơn thành công",
-      data: hoadon,
+      data: { items: CTHD.data, MaHoaDon: hoadon._id },
     };
   } catch (error) {
     await session.abortTransaction();

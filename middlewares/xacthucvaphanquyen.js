@@ -1,5 +1,15 @@
 const jwt = require("../utils/jwt");
 const XacThuc = (req, res, next) => {
+  whiteList = [
+    "/dangnhap",
+    "/xulythanhtoanmomo",
+    "/xulythanhtoanvnpay",
+    "/xulythanhtoanzalopay",
+    "/test",
+  ];
+  if (whiteList.some((path) => req.path.includes(path))) {
+    return next();
+  }
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Không có token hợp lệ" });

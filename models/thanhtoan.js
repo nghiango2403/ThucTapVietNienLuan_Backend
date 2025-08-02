@@ -21,6 +21,7 @@ const ThanhToanSchema = mongoose.Schema({
   },
   TrangThaiThanhToan: {
     type: String,
+    default: "Chưa thanh toán",
   },
 });
 
