@@ -1,8 +1,46 @@
 const service = require("../services/mainservice");
 const thanhtoanservice = require("../services/thanhtoanservice");
+const { XacThucToken, TaoToken } = require("../utils/jwt");
 
 const LaSo = (so) => {
   return typeof so === "number";
+};
+const lammoiaccesstoken = (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res
+      .status(403)
+      .json({ message: "Refresh token không được để trống" });
+  }
+  try {
+    const decoded = XacThucToken(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+    if (!decoded) {
+      return res.status(403).json({ message: "Refresh token không hợp lệ" });
+    }
+    const newAccessToken = TaoToken(
+      {
+        TenDangNhap: decoded.TenDangNhap,
+        HoTen: decoded.HoTen,
+        ChucVu: decoded.ChucVu,
+        MaChucVu: decoded.MaChucVu,
+        MaNhanSu: decoded.MaNhanSu,
+        MaNhanVien: decoded.MaNhanVien,
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      process.env.ACCESS_TOKEN_EXPIRES
+    );
+    return res.status(200).json({
+      status: 200,
+      message: "Làm mới access token thành công",
+      data: { accessToken: newAccessToken },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
 };
 const themchucvu = async (req, res) => {
   const { TenChucVu } = req.body;
@@ -24,7 +62,7 @@ const xemchucvu = async (req, res) => {
 };
 const xoachucvu = async (req, res) => {
   try {
-    const result = await service.XoaChucVu(req.params.id);
+    const result = await service.XoaChucVu(req.body.MaChucVu);
     return res.status(result.status).json(result);
   } catch (error) {
     return res.status(400).json({ message: "Lỗi service" });
@@ -40,9 +78,40 @@ const themnhanvienvataikhoan = async (req, res) => {
   }
 };
 const dangnhap = async (req, res) => {
+  console.log("Đang xử lý đăng nhập");
   try {
-    const result = await service.DangNhap(req.body);
-    return res.status(result.status).json(result);
+    const result = await service.LayThongTinDangNhap(req.body);
+    if (result.status !== 200) {
+      return res.status(result.status).json(result);
+    }
+    const ThongTin = {
+      TenDangNhap: result.data.TenDangNhap,
+      HoTen: result.data.MaNhanSu.HoTen,
+      ChucVu: result.data.MaChucVu.TenChucVu,
+      MaChucVu: result.data.MaChucVu._id,
+      MaNhanSu: result.data.MaNhanSu._id,
+      MaNhanVien: result.data._id,
+    };
+
+    const accessToken = TaoToken(
+      ThongTin,
+      process.env.ACCESS_TOKEN_SECRET,
+      process.env.ACCESS_TOKEN_EXPIRES
+    );
+    const refreshToken = TaoToken(
+      ThongTin,
+      process.env.REFRESH_TOKEN_SECRET,
+      process.env.REFRESH_TOKEN_EXPIRES
+    );
+    return res.status(200).json({
+      status: 200,
+      message: "Đăng nhập thành công",
+      data: {
+        accessToken,
+        refreshToken,
+        ThongTin,
+      },
+    });
   } catch (error) {
     return res.status(400).json({ message: "Lỗi service" });
   }
@@ -223,6 +292,7 @@ const themkhuyenmai = async (req, res) => {
     const result = await service.ThemKhuyenMai(req.body);
     return res.status(result.status).json(result);
   } catch (error) {
+    console.log(error);
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
@@ -428,8 +498,43 @@ const xulythanhtoanvnpay = async (req, res) => {
 
 const kiemtratrangthaithanhtoanvnpay = async (req, res) => {
   try {
-    console.log(req.body);
     const result = await thanhtoanservice.KiemTraTrangThaiThanhToanVnPay(req);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const themquyen = async (req, res) => {
+  try {
+    const result = await service.ThemQuyen(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xoaquyen = async (req, res) => {
+  try {
+    const result = await service.XoaQuyen(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xemquyen = async (req, res) => {
+  try {
+    const result = await service.XemQuyen();
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const suaquyen = async (req, res) => {
+  try {
+    const result = await service.SuaQuyen(req.body);
     return res.status(result.status).json(result);
   } catch (error) {
     console.log(error);
@@ -442,6 +547,7 @@ module.exports = {
   xoachucvu,
   themnhanvienvataikhoan,
   dangnhap,
+  lammoiaccesstoken,
   doimatkhau,
   laythongtintaikhoan,
   doithongtintaikhoan,
@@ -477,4 +583,8 @@ module.exports = {
   taothanhtoanvnpay,
   xulythanhtoanvnpay,
   kiemtratrangthaithanhtoanvnpay,
+  themquyen,
+  xoaquyen,
+  xemquyen,
+  suaquyen,
 };

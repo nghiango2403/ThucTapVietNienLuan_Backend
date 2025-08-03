@@ -5,13 +5,15 @@ const apiController = require("../controllers/maincontroller");
 const middleware = require("../middlewares/xacthucvaphanquyen");
 
 const initApiRoutes = (app) => {
+  router.use(middleware.XacThuc);
   router.post("/dangnhap", apiController.dangnhap);
+  router.post("/lammoiaccesstoken", apiController.lammoiaccesstoken);
   router.post("/xulythanhtoanmomo", apiController.xulythanhtoanmomo);
   router.get("/xulythanhtoanvnpay", apiController.xulythanhtoanvnpay);
-  router.use(middleware.XacThuc);
+
   router.post("/themchucvu", apiController.themchucvu);
   router.get("/laychucvu", apiController.xemchucvu);
-  router.delete("/xoachucvu/", apiController.xoachucvu);
+  router.delete("/xoachucvu", apiController.xoachucvu);
   router.post("/themnhanvien", apiController.themnhanvienvataikhoan);
   router.post("/doimatkhau", apiController.doimatkhau);
   router.get("/laythongtintaikhoan", apiController.laythongtintaikhoan);
@@ -61,6 +63,10 @@ const initApiRoutes = (app) => {
     "/kiemtratrangthaithanhtoanvnpay",
     apiController.kiemtratrangthaithanhtoanvnpay
   );
+  router.post("/themquyen", apiController.themquyen);
+  router.get("/xemquyen", apiController.xemquyen);
+  router.delete("/xoaquyen", apiController.xoaquyen);
+  router.put("/suaquyen", apiController.suaquyen);
 
   return app.use("/", router);
 };

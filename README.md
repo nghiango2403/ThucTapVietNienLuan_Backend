@@ -21,8 +21,8 @@
 - **Xoá**
   - Method: `DELETE`
   - Endpoint: `/xoachucvu`
-  - Params:
-    - `id`: ID của chức vụ cần xoá
+  - Body:
+    - `MaChucVu`: ID của chức vụ cần xoá
 
 ### 📂 Quản lý hệ thống
 

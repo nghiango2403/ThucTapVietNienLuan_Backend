@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const { TaoToken } = require("../utils/jwt");
+
 const NhanSu = require("../models/nhansu");
 const TaiKhoan = require("../models/taikhoan");
 const ChucVu = require("../models/chucvu");
@@ -10,6 +10,7 @@ const ChiTietPhieuNhapHang = require("../models/chitietphieunhaphang");
 const KhuyenMai = require("../models/khuyenmai");
 const HoaDon = require("../models/hoadon");
 const ChiTietHoaDon = require("../models/chitiethoadon");
+const Quyen = require("../models/quyen");
 
 const ThemChucVu = async (TenChucVu) => {
   try {
@@ -42,6 +43,7 @@ const XemChucVu = async () => {
   }
 };
 const XoaChucVu = async (id) => {
+  console.log("Xoá chức vụ với ID:", id);
   try {
     const chucvu = await ChucVu.findByIdAndDelete(id);
     return {
@@ -125,7 +127,7 @@ const ThemNhanVienVaTaiKhoan = async ({
     };
   }
 };
-const DangNhap = async ({ TenDangNhap, MatKhau }) => {
+const LayThongTinDangNhap = async ({ TenDangNhap, MatKhau }) => {
   try {
     const taikhoan = await TaiKhoan.findOne({ TenDangNhap })
       .populate({
@@ -147,32 +149,10 @@ const DangNhap = async ({ TenDangNhap, MatKhau }) => {
         message: "Sai tên đăng nhập hoặc mật khẩu",
       };
     }
-    const ThongTin = {
-      TenDangNhap: taikhoan.TenDangNhap,
-      HoTen: taikhoan.MaNhanSu.HoTen,
-      ChucVu: taikhoan.MaChucVu.TenChucVu,
-      MaChucVu: taikhoan.MaChucVu._id,
-      MaNhanSu: taikhoan.MaNhanSu._id,
-      MaNhanVien: taikhoan._id,
-    };
-    const accessToken = await TaoToken(
-      ThongTin,
-      process.env.ACCESS_TOKEN_SECRET,
-      process.env.ACCESS_TOKEN_EXPIRES
-    );
-    const refreshToken = await TaoToken(
-      ThongTin,
-      process.env.REFRESH_TOKEN_SECRET,
-      process.env.REFRESH_TOKEN_EXPIRES
-    );
     return {
       status: 200,
-      message: "Đăng nhập thành công",
-      data: {
-        accessToken,
-        refreshToken,
-        ThongTin,
-      },
+      message: "Lấy thông tin đăng nhập thành công",
+      data: taikhoan,
     };
   } catch (error) {
     console.log(error);
@@ -255,6 +235,7 @@ const DoiThongTinTaiKhoan = async (
 };
 const XemDanhSachNhanVien = async ({ Trang, Dong }) => {
   try {
+    const tongSoLuong = await TaiKhoan.countDocuments();
     const danhSachNhanVien = await TaiKhoan.find({})
       .select("TenDangNhap NgaySinh KichHoat")
       .populate({ path: "MaNhanSu", select: "HoTen GioiTinh" })
@@ -264,7 +245,10 @@ const XemDanhSachNhanVien = async ({ Trang, Dong }) => {
     return {
       status: 200,
       message: "Lấy danh sách nhân viên",
-      data: danhSachNhanVien,
+      data: {
+        danhsach: danhSachNhanVien,
+        sotrang: Math.ceil(tongSoLuong / Dong),
+      },
     };
   } catch (error) {
     console.log(error);
@@ -276,16 +260,20 @@ const XemDanhSachNhanVien = async ({ Trang, Dong }) => {
 };
 const TimNhanVien = async (TenNhanVien) => {
   try {
-    const tt = await NhanSu.find({
+    const nhanViens = await NhanSu.find({
       HoTen: { $regex: TenNhanVien, $options: "i" },
     });
-    if (tt.length === 0) {
+
+    if (nhanViens.length === 0) {
       return {
         status: 400,
         message: "Không tìm thấy nhân viên",
       };
     }
-    const data = await TaiKhoan.find({ MaNhanSu: tt[0]._id })
+
+    const taiKhoans = await TaiKhoan.find({
+      MaNhanSu: { $in: nhanViens.map((nv) => nv._id) },
+    })
       .select("TenDangNhap KichHoat")
       .populate("MaNhanSu")
       .populate("MaChucVu");
@@ -293,7 +281,7 @@ const TimNhanVien = async (TenNhanVien) => {
     return {
       status: 200,
       message: "Lấy thông tin nhân viên",
-      data: data,
+      data: taiKhoans,
     };
   } catch (error) {
     console.log(error);
@@ -398,22 +386,30 @@ const ThemHangHoa = async ({ Ten, Gia }) => {
 };
 const TimHangHoa = async ({ Ten, Trang, Dong }) => {
   try {
-    const sp = await HangHoa.find({ Ten: { $regex: Ten, $options: "i" } })
+    const dieuKien = { Ten: { $regex: Ten, $options: "i" } };
+
+    const tongSoLuong = await HangHoa.countDocuments(dieuKien);
+
+    const sp = await HangHoa.find(dieuKien)
       .skip((Trang - 1) * Dong)
       .limit(Dong);
+
+    const sotrang = Math.ceil(tongSoLuong / Dong);
+
     return {
       status: 200,
-      message: "Thêm sản phẩm thành công",
-      data: sp,
+      message: "Tìm sản phẩm thành công",
+      data: { danhsach: sp, sotrang },
     };
   } catch (error) {
     console.log(error);
     return {
       status: 400,
-      message: "Lỗi khi thêm sản phẩm",
+      message: "Lỗi khi tìm sản phẩm",
     };
   }
 };
+
 const CapNhatHangHoa = async ({ MaHangHoa, Ten, Gia }) => {
   try {
     await HangHoa.findByIdAndUpdate(MaHangHoa, { Ten, Gia });
@@ -468,17 +464,19 @@ const TaoPhieuNhapHang = async ({ DanhSach }) => {
 };
 const LayPhieuNhapHang = async ({ Trang, Dong }) => {
   try {
+    const tongSoLuong = await PhieuNhapHang.countDocuments();
+
     const phieunhaphang = await PhieuNhapHang.find({})
-      .sort({
-        ThoiGianNhap: -1,
-      })
+      .sort({ ThoiGianNhap: -1 })
       .skip((Trang - 1) * Dong)
       .limit(Dong);
-    console.log(phieunhaphang);
+
+    const sotrang = Math.ceil(tongSoLuong / Dong);
+
     return {
       status: 200,
       message: "Lấy danh sách phiếu nhập hàng thành công",
-      data: phieunhaphang,
+      data: { danhsach: phieunhaphang, sotrang },
     };
   } catch (error) {
     console.log(error);
@@ -488,6 +486,7 @@ const LayPhieuNhapHang = async ({ Trang, Dong }) => {
     };
   }
 };
+
 const LayChiTietPhieuNhapHang = async ({ MaPhieuNhapHang }) => {
   try {
     const chitietphieunhaphang = await ChiTietPhieuNhapHang.find({
@@ -618,14 +617,19 @@ const CapNhatKhuyenMai = async ({
 };
 const XemKhuyenMai = async ({ Trang, Dong }) => {
   try {
+    const tongSoLuong = await KhuyenMai.countDocuments();
+
     const km = await KhuyenMai.find({})
       .sort({ NgayKetThuc: -1 })
       .skip((Trang - 1) * Dong)
       .limit(Dong);
+
+    const sotrang = Math.ceil(tongSoLuong / Dong);
+
     return {
       status: 200,
       message: "Lấy danh sách khuyến mãi thành công",
-      data: km,
+      data: { danhsach: km, sotrang },
     };
   } catch (error) {
     console.log(error);
@@ -635,29 +639,38 @@ const XemKhuyenMai = async ({ Trang, Dong }) => {
     };
   }
 };
+
 const XemKhuyenMaiConHoatDong = async ({ Trang, Dong }) => {
   try {
     const today = new Date();
-    const km = await KhuyenMai.find({
+    const dieuKien = {
       NgayBatDau: { $lte: today },
       NgayKetThuc: { $gte: today },
-    })
+    };
+
+    const tongSoLuong = await KhuyenMai.countDocuments(dieuKien);
+
+    const km = await KhuyenMai.find(dieuKien)
       .sort({ NgayKetThuc: -1 })
       .skip((Trang - 1) * Dong)
       .limit(Dong);
+
+    const sotrang = Math.ceil(tongSoLuong / Dong);
+
     return {
       status: 200,
-      message: "Lấy danh sách khuyến mái hệ thống",
-      data: km,
+      message: "Lấy danh sách khuyến mãi hệ thống",
+      data: { danhsach: km, sotrang },
     };
   } catch (error) {
     console.log(error);
     return {
       status: 400,
-      message: "Lấy danh sách khuyến mái hệ thống thất bại",
+      message: "Lấy danh sách khuyến mãi hệ thống thất bại",
     };
   }
 };
+
 const ThemHoaDon = async (
   { MaKhuyenMai, HinhThucThanhToan, ChiTietHD },
   MaNhanVien
@@ -668,6 +681,7 @@ const ThemHoaDon = async (
     var tienhd = 0;
     for (const item of ChiTietHD) {
       const a = await HangHoa.findById(item.MaHangHoa).session(session);
+      console.log(a);
       tienhd += a.Gia * item.SoLuong;
     }
     if (MaKhuyenMai) {
@@ -728,19 +742,27 @@ const XemDanhSachHoaDon = async ({ Trang, Dong, Thang, Nam }) => {
   try {
     const BatDau = new Date(Nam, Thang - 1, 1);
     const KetThuc = new Date(Nam, Thang, 1);
-    const hd = await HoaDon.find({
+
+    const dieuKien = {
       NgayLap: {
         $gte: BatDau,
         $lt: KetThuc,
       },
-    })
+    };
+
+    const tongSoLuong = await HoaDon.countDocuments(dieuKien);
+
+    const hd = await HoaDon.find(dieuKien)
       .sort({ NgayLap: -1 })
       .skip((Trang - 1) * Dong)
       .limit(Dong);
+
+    const soTrang = Math.ceil(tongSoLuong / Dong);
+
     return {
       status: 200,
       message: "Lấy danh sách hóa đơn thành công",
-      data: hd,
+      data: { danhsach: hd, soTrang },
     };
   } catch (error) {
     console.log(error);
@@ -750,6 +772,7 @@ const XemDanhSachHoaDon = async ({ Trang, Dong, Thang, Nam }) => {
     };
   }
 };
+
 const XemDanhSachHoaDonCuaNhanVien = async (
   { Trang, Dong, Thang, Nam },
   MaNhanVien
@@ -757,20 +780,31 @@ const XemDanhSachHoaDonCuaNhanVien = async (
   try {
     const BatDau = new Date(Nam, Thang - 1, 1);
     const KetThuc = new Date(Nam, Thang, 1);
-    const hd = await HoaDon.find({
+
+    const dieuKien = {
       MaNhanVien,
       NgayLap: {
         $gte: BatDau,
         $lt: KetThuc,
       },
-    })
+    };
+
+    const tongSoLuong = await HoaDon.countDocuments(dieuKien);
+
+    const hd = await HoaDon.find(dieuKien)
       .sort({ NgayLap: -1 })
       .skip((Trang - 1) * Dong)
       .limit(Dong);
+
+    const sotrang = Math.ceil(tongSoLuong / Dong);
+
     return {
       status: 200,
       message: "Lấy danh sách hóa đơn của nhân viên thành công",
-      data: hd,
+      data: {
+        danhsach: hd,
+        sotrang,
+      },
     };
   } catch (error) {
     console.log(error);
@@ -780,6 +814,7 @@ const XemDanhSachHoaDonCuaNhanVien = async (
     };
   }
 };
+
 const XemChiTietHoaDon = async ({ MaHoaDon }) => {
   try {
     const hd = await ChiTietHoaDon.find({ MaHoaDon }).populate({
@@ -830,12 +865,76 @@ const XoaHoaDon = async ({ MaHoaDon }) => {
     };
   }
 };
+const ThemQuyen = async ({ TenQuyen, Url }) => {
+  try {
+    const ThemQuyen = await Quyen.create({ TenQuyen, Url });
+    return {
+      status: 200,
+      message: "Thêm quyền thành công",
+      data: ThemQuyen,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi kiểm tra quyền",
+    };
+  }
+};
+const XoaQuyen = async ({ MaQuyen }) => {
+  try {
+    const XoaQuyen = await Quyen.deleteOne({ _id: MaQuyen });
+    return {
+      status: 200,
+      message: "Xoá quyền thành công",
+      data: XoaQuyen,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi xoá quyền",
+    };
+  }
+};
+const XemQuyen = async () => {
+  try {
+    const QuyenList = await Quyen.find({});
+    return {
+      status: 200,
+      message: "Lấy danh sách quyền thành công",
+      data: QuyenList,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi lấy danh sách quyền",
+    };
+  }
+};
+const SuaQuyen = async ({ MaQuyen, TenQuyen, Url }) => {
+  try {
+    const SuaQuyen = await Quyen.updateOne({ _id: MaQuyen }, { TenQuyen, Url });
+    return {
+      status: 200,
+      message: "Sửa quyền thành công",
+      data: SuaQuyen,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi sửa quyền",
+    };
+  }
+};
 module.exports = {
   ThemChucVu,
   XemChucVu,
   XoaChucVu,
   ThemNhanVienVaTaiKhoan,
-  DangNhap,
+  LayThongTinDangNhap,
   DoiMatKhau,
   LayThongTinTaiKhoan,
   DoiThongTinTaiKhoan,
@@ -861,4 +960,8 @@ module.exports = {
   XemDanhSachHoaDonCuaNhanVien,
   XemChiTietHoaDon,
   XoaHoaDon,
+  ThemQuyen,
+  XoaQuyen,
+  XemQuyen,
+  SuaQuyen,
 };
