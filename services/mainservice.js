@@ -11,6 +11,7 @@ const KhuyenMai = require("../models/khuyenmai");
 const HoaDon = require("../models/hoadon");
 const ChiTietHoaDon = require("../models/chitiethoadon");
 const Quyen = require("../models/quyen");
+const QuyenCuaChucVu = require("../models/quyencuachucvu");
 
 const ThemChucVu = async (TenChucVu) => {
   try {
@@ -670,7 +671,31 @@ const XemKhuyenMaiConHoatDong = async ({ Trang, Dong }) => {
     };
   }
 };
-
+const LayThongTinHoaDon = async (MaHoaDon) => {
+  console.log("Lấy khuyến mãi bằng ID:", MaHoaDon);
+  try {
+    const thongtinhoadon = await HoaDon.findById(MaHoaDon).populate(
+      "MaKhuyenMai"
+    );
+    if (!thongtinhoadon) {
+      return {
+        status: 404,
+        message: "Khuyến mãi không tồn tại",
+      };
+    }
+    return {
+      status: 200,
+      message: "Lấy thông tin khuyến mãi thành công",
+      data: thongtinhoadon,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi lấy thông tin khuyến mãi",
+    };
+  }
+};
 const ThemHoaDon = async (
   { MaKhuyenMai, HinhThucThanhToan, ChiTietHD },
   MaNhanVien
@@ -929,6 +954,56 @@ const SuaQuyen = async ({ MaQuyen, TenQuyen, Url }) => {
     };
   }
 };
+const ThemQuyenCuaChucVu = async ({ MaChucVu, MaQuyen }) => {
+  try {
+    const quyen = await QuyenCuaChucVu.create({ MaChucVu, MaQuyen });
+    return {
+      status: 200,
+      message: "Thêm quyền cho chức vụ thành công",
+      data: quyen,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi thêm quyền cho chức vụ",
+    };
+  }
+};
+const XoaQuyenCuaChucVu = async ({ MaChucVu, MaQuyen }) => {
+  try {
+    const quyen = await QuyenCuaChucVu.deleteOne({ MaChucVu, MaQuyen });
+    return {
+      status: 200,
+      message: "Xoá quyền cho chức vụ thành cong",
+      data: quyen,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi xoá quyền cho chức vụ",
+    };
+  }
+};
+const LayQuyenCuaChucVu = async (MaChucVu) => {
+  try {
+    const quyen = await QuyenCuaChucVu.find({ MaChucVu })
+      .populate("MaQuyen")
+      .select("TenQuyen Url");
+    return {
+      status: 200,
+      message: "Lấy quyền của chức vụ thành công",
+      data: quyen,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi lấy quyền của chức vụ",
+    };
+  }
+};
 module.exports = {
   ThemChucVu,
   XemChucVu,
@@ -955,6 +1030,7 @@ module.exports = {
   CapNhatKhuyenMai,
   XemKhuyenMai,
   XemKhuyenMaiConHoatDong,
+  LayThongTinHoaDon,
   ThemHoaDon,
   XemDanhSachHoaDon,
   XemDanhSachHoaDonCuaNhanVien,
@@ -964,4 +1040,7 @@ module.exports = {
   XoaQuyen,
   XemQuyen,
   SuaQuyen,
+  ThemQuyenCuaChucVu,
+  XoaQuyenCuaChucVu,
+  LayQuyenCuaChucVu,
 };

@@ -1,12 +1,14 @@
+const { XemThongTinChiTietCuaNhanVien } = require("../services/mainservice");
 const jwt = require("../utils/jwt");
+whiteList = [
+  "/dangnhap",
+  "/xulythanhtoanmomo",
+  "/xulythanhtoanvnpay",
+  "/xulythanhtoanzalopay",
+  "/lammoiaccesstoken",
+  "/test",
+];
 const XacThuc = (req, res, next) => {
-  whiteList = [
-    "/dangnhap",
-    "/xulythanhtoanmomo",
-    "/xulythanhtoanvnpay",
-    "/xulythanhtoanzalopay",
-    "/test",
-  ];
   if (whiteList.some((path) => req.path.includes(path))) {
     return next();
   }
@@ -30,4 +32,24 @@ const XacThuc = (req, res, next) => {
     });
   }
 };
-module.exports = { XacThuc };
+const KiemTraTaiKhoanCoBiKhoa = async (req, res, next) => {
+  if (whiteList.some((path) => req.path.includes(path))) {
+    return next();
+  }
+  try {
+    const result = await XemThongTinChiTietCuaNhanVien(req.user.MaNhanVien);
+    if (result.data.KichHoat === false) {
+      return res.status(403).json({
+        status: 403,
+        message: "Tài khoản của bạn đã bị khóa, vui lòng liên hệ quản lý",
+      });
+    }
+    next();
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: "Lỗi khi kiểm tra tài khoản",
+    });
+  }
+};
+module.exports = { XacThuc, KiemTraTaiKhoanCoBiKhoa };

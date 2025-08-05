@@ -5,10 +5,11 @@ const apiController = require("../controllers/maincontroller");
 const middleware = require("../middlewares/xacthucvaphanquyen");
 
 const initApiRoutes = (app) => {
-  router.use(middleware.XacThuc);
+  // router.use(middleware.XacThuc, middleware.KiemTraTaiKhoanCoBiKhoa);
   router.post("/dangnhap", apiController.dangnhap);
   router.post("/lammoiaccesstoken", apiController.lammoiaccesstoken);
   router.post("/xulythanhtoanmomo", apiController.xulythanhtoanmomo);
+  router.post("/xulythanhtoanzalopay", apiController.xulythanhtoanzalopay);
   router.get("/xulythanhtoanvnpay", apiController.xulythanhtoanvnpay);
 
   router.post("/themchucvu", apiController.themchucvu);
@@ -53,7 +54,6 @@ const initApiRoutes = (app) => {
     apiController.kiemtratrangthaithanhtoanmomo
   );
   router.post("/taothanhtoanzalopay", apiController.taothanhtoanzalopay);
-  router.post("/xulythanhtoanzalopay", apiController.xulythanhtoanzalopay);
   router.post(
     "/kiemtratrangthaithanhtoanzalopay",
     apiController.kiemtratrangthaithanhtoanzalopay
@@ -67,7 +67,10 @@ const initApiRoutes = (app) => {
   router.get("/xemquyen", apiController.xemquyen);
   router.delete("/xoaquyen", apiController.xoaquyen);
   router.put("/suaquyen", apiController.suaquyen);
-
+  router.post("/themquyencuachucvu", apiController.themquyencuachucvu);
+  router.get("/layquyencuachucvu", apiController.layquyencuachucvu);
+  router.delete("/xoaquyencuachucvu", apiController.xoaquyencuachucvu);
+  router.get("/laythongtinhoadon", apiController.laythongtinhoadon);
   return app.use("/", router);
 };
 module.exports = initApiRoutes;

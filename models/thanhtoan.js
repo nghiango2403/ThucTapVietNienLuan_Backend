@@ -10,10 +10,6 @@ const ThanhToanSchema = mongoose.Schema({
     ref: "HoaDon",
     required: true,
   },
-  MaGiaoDich: {
-    type: String,
-    default: null,
-  },
   ThoiGianThanhToan: { type: Date, default: null },
   ThoiGianTao: {
     type: Date,

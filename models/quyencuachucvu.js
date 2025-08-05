@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const QuyenCuaChucVuSchema = new mongoose.Schema({
-  ChucVu: {
+  MaChucVu: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ChucVu",
     required: true,
   },
-  Quyen: {
+  MaQuyen: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Quyen",
     required: true,

@@ -227,15 +227,10 @@ const timhanghoa = async (req, res) => {
 };
 const capnhathanghoa = async (req, res) => {
   try {
-    if (!LaSo(req.body.Gia)) {
-      return res.status(400).json({
-        status: 400,
-        message: "Giá phải là số",
-      });
-    }
-    const result = await service.CapNhatHangHoa(req.body);
+    const result = await service.CapNhatHangHoa(req.query);
     return res.status(result.status).json(result);
   } catch (error) {
+    console.log(error);
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
@@ -304,7 +299,7 @@ const capnhatkhuyenmai = async (req, res) => {
         message: "Tiền khuyến mãi và điều kiện phải là số",
       });
     }
-    const result = await service.CapNhatKhuyenMai(req.body);
+    const result = await service.CapNhatKhuyenMai(req.query);
     return res.status(result.status).json(result);
   } catch (error) {
     return res.status(400).json({ message: "Lỗi service" });
@@ -332,20 +327,31 @@ const themhoadon = async (req, res) => {
     if (result.status !== 200) {
       return res.status(result.status).json(result);
     }
+    const km = await service.LayThongTinHoaDon(req.body.MaHoaDon);
+    let ThongTinKhuyenMai = null;
+    if (km.status === 200) {
+      ThongTinKhuyenMai = km.data.MaKhuyenMai;
+    }
     if (req.body.HinhThucThanhToan === "MoMo") {
       response = await thanhtoanservice.TaoThanhToanMoMo(
         result.data.MaHoaDon,
-        result.data.items
+        result.data.items,
+        ThongTinKhuyenMai
       );
       return res.status(response.status).json(response);
     }
     if (req.body.HinhThucThanhToan === "ZaLoPay") {
       response = await thanhtoanservice.TaoThanhToanZaLoPay(
         result.data.MaHoaDon,
-        result.data.items
+        result.data.items,
+        ThongTinKhuyenMai
       );
       if (req.body.HinhThucThanhToan === "VnPay") {
-        response = await thanhtoanservice.TaoThanhToanVnPay(req, result.data);
+        response = await thanhtoanservice.TaoThanhToanVnPay(
+          req,
+          result.data,
+          ThongTinKhuyenMai
+        );
       }
       return res.status(response.status).json(response);
     }
@@ -396,9 +402,16 @@ const taothanhtoanmomo = async (req, res) => {
     if (result1.status !== 200) {
       return res.status(result1.status).json(result1);
     }
+    const km = await service.LayThongTinHoaDon(req.body.MaHoaDon);
+    let ThongTinKhuyenMai = null;
+    if (km.status === 200) {
+      ThongTinKhuyenMai = km.data.MaKhuyenMai;
+    }
+
     const response = await thanhtoanservice.TaoThanhToanMoMo(
       req.body.MaHoaDon,
-      result1.data
+      result1.data,
+      ThongTinKhuyenMai
     );
     return res.status(response.status).json(response);
   } catch (error) {
@@ -431,9 +444,15 @@ const taothanhtoanzalopay = async (req, res) => {
     if (result1.status !== 200) {
       return res.status(result1.status).json(result1);
     }
+    const km = await service.LayThongTinHoaDon(req.body.MaHoaDon);
+    let ThongTinKhuyenMai = null;
+    if (km.status === 200) {
+      ThongTinKhuyenMai = km.data.MaKhuyenMai;
+    }
     const result = await thanhtoanservice.TaoThanhToanZaLoPay(
       req.body.MaHoaDon,
-      result1.data
+      result1.data,
+      ThongTinKhuyenMai
     );
     return res.status(result.status).json(result);
   } catch (error) {
@@ -466,7 +485,16 @@ const taothanhtoanvnpay = async (req, res) => {
     if (result1.status !== 200) {
       return res.status(result1.status).json(result1);
     }
-    const result = await thanhtoanservice.TaoThanhToanVnPay(req, result1.data);
+    const km = await service.LayThongTinHoaDon(req.body.MaHoaDon);
+    let ThongTinKhuyenMai = null;
+    if (km.status === 200) {
+      ThongTinKhuyenMai = km.data.MaKhuyenMai;
+    }
+    const result = await thanhtoanservice.TaoThanhToanVnPay(
+      req,
+      result1.data,
+      ThongTinKhuyenMai
+    );
     return res
       .status(200)
       .json({ status: 200, message: "Thành công", data: result });
@@ -534,7 +562,43 @@ const xemquyen = async (req, res) => {
 };
 const suaquyen = async (req, res) => {
   try {
-    const result = await service.SuaQuyen(req.body);
+    const result = await service.SuaQuyen(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const themquyencuachucvu = async (req, res) => {
+  try {
+    const result = await service.ThemQuyenCuaChucVu(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const xoaquyencuachucvu = async (req, res) => {
+  try {
+    const result = await service.XoaQuyenCuaChucVu(req.body);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const layquyencuachucvu = async (req, res) => {
+  try {
+    const result = await service.LayQuyenCuaChucVu(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const laythongtinhoadon = async (req, res) => {
+  try {
+    const result = await service.LayThongTinHoaDon(req.query.MaHoaDon);
     return res.status(result.status).json(result);
   } catch (error) {
     console.log(error);
@@ -587,4 +651,8 @@ module.exports = {
   xoaquyen,
   xemquyen,
   suaquyen,
+  themquyencuachucvu,
+  xoaquyencuachucvu,
+  layquyencuachucvu,
+  laythongtinhoadon,
 };

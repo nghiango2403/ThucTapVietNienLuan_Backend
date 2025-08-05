@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const moment = require("moment");
 let qs = require("qs");
 const ThanhToan = require("../models/thanhtoan");
-const TaoThanhToanMoMo = async (MaHoaDon, item) => {
+const TaoThanhToanMoMo = async (MaHoaDon, item, km) => {
   const accessKey = process.env.ACCESSKEYMOMO;
   const secretKey = process.env.SECRETKEYMOMO;
   const partnerCode = process.env.PARTNER_CODE_MOMO;
@@ -33,6 +33,17 @@ const TaoThanhToanMoMo = async (MaHoaDon, item) => {
     totalPrice: i.SoLuong * i.DonGia,
     currency: "VND",
   }));
+  if (km) {
+    items.push({
+      id: km._id.toString(),
+      name: km.TenKhuyenMai,
+      quantity: 1,
+      price: -km.TienKhuyenMai,
+      totalPrice: -km.TienKhuyenMai,
+      currency: "VND",
+    });
+  }
+
   const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
   const amount = totalAmount.toString();
 
@@ -212,7 +223,7 @@ const KiemTraTrangThaiThanhToanMoMo = async ({ MaHoaDon }) => {
     };
   }
 };
-const TaoThanhToanZaLoPay = async (MaHoaDon, item) => {
+const TaoThanhToanZaLoPay = async (MaHoaDon, item, km) => {
   const transID = Math.floor(Math.random() * 1000000);
   const app_trans_id = `${moment().format("YYMMDD")}_${transID}`;
   try {
@@ -233,6 +244,14 @@ const TaoThanhToanZaLoPay = async (MaHoaDon, item) => {
     itemprice: i.DonGia,
     itemquantity: i.SoLuong,
   }));
+  if (km) {
+    items.push({
+      itemid: km._id.toString(),
+      itemname: km.TenKhuyenMai,
+      itemprice: -km.TienKhuyenMai,
+      itemquantity: 1,
+    });
+  }
   const amount = items.reduce(
     (sum, i) => sum + i.itemquantity * i.itemprice,
     0
@@ -394,7 +413,7 @@ function sortObject(obj) {
 
   return sorted;
 }
-const TaoThanhToanVnPay = async (req, item) => {
+const TaoThanhToanVnPay = async (req, item, km) => {
   let date = new Date();
   let createDate = moment(date).format("YYYYMMDDHHmmss");
   let MaHoaDon = req.body.MaHoaDon;
@@ -425,6 +444,14 @@ const TaoThanhToanVnPay = async (req, item) => {
     itemprice: i.DonGia,
     itemquantity: i.SoLuong,
   }));
+  if (km) {
+    items.push({
+      itemid: km._id.toString(),
+      itemname: km.TenKhuyenMai,
+      itemprice: -km.TienKhuyenMai,
+      itemquantity: 1,
+    });
+  }
   const amount = items.reduce(
     (sum, i) => sum + i.itemquantity * i.itemprice,
     0
