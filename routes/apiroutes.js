@@ -76,6 +76,10 @@ const initApiRoutes = (app) => {
   router.get("/layquyencuachucvu", apiController.layquyencuachucvu);
   router.delete("/xoaquyencuachucvu", apiController.xoaquyencuachucvu);
   router.get("/laythongtinhoadon", apiController.laythongtinhoadon);
+  router.get("/thongkenhaphang", apiController.thongkenhaphang);
+  router.get("/thongkebanhang", apiController.thongkebanhang);
+  router.get("/thongketonkho", apiController.thongketonkho);
+  router.get("/thongkedoanhthu", apiController.thongkedoanhthu);
   return app.use("/", router);
 };
 module.exports = initApiRoutes;

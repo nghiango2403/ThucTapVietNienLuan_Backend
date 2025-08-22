@@ -1017,6 +1017,232 @@ const XoaThanhToan = async (MaHoaDon) => {
     };
   }
 };
+const ThongKeNhapHang = async ({ thang, nam }) => {
+  try {
+    const thongke = await PhieuNhapHang.aggregate([
+      {
+        $match: {
+          ThoiGianNhap: {
+            $gte: new Date(nam, thang - 1, 1),
+            $lt: new Date(nam, thang, 1),
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "chitietphieunhaphangs",
+          localField: "_id",
+          foreignField: "MaPhieuNhapHang",
+          as: "ChiTiet",
+        },
+      },
+      { $unwind: "$ChiTiet" },
+      {
+        $group: {
+          _id: "$ChiTiet.MaHangHoa",
+          TongSoLuong: { $sum: "$ChiTiet.SoLuong" },
+          TongTien: {
+            $sum: { $multiply: ["$ChiTiet.SoLuong", "$ChiTiet.TienHang"] },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "hanghoas",
+          localField: "_id",
+          foreignField: "_id",
+          as: "ThongTinHang",
+        },
+      },
+      { $unwind: "$ThongTinHang" },
+      {
+        $project: {
+          _id: 0,
+          MaHangHoa: "$_id",
+          TenHangHoa: "$ThongTinHang.Ten",
+          TongSoLuong: 1,
+          TongTien: 1,
+        },
+      },
+    ]);
+
+    return {
+      status: 200,
+      message: "Lấy thong ke nhap hang thang nay",
+      data: thongke,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi lấy thong ke nhap hang thang nay",
+    };
+  }
+};
+const ThongKeBanHang = async ({ thang, nam }) => {
+  try {
+    const thongke = await HoaDon.aggregate([
+      {
+        $match: {
+          NgayLap: {
+            $gte: new Date(nam, thang - 1, 1),
+            $lt: new Date(nam, thang, 1),
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "chitiethoadons",
+          localField: "_id",
+          foreignField: "MaHoaDon",
+          as: "ChiTiet",
+        },
+      },
+      { $unwind: "$ChiTiet" },
+      {
+        $group: {
+          _id: "$ChiTiet.MaHangHoa",
+          TongSoLuong: { $sum: "$ChiTiet.SoLuong" },
+          TongTien: {
+            $sum: { $multiply: ["$ChiTiet.SoLuong", "$ChiTiet.DonGia"] },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "hanghoas",
+          localField: "_id",
+          foreignField: "_id",
+          as: "ThongTinHang",
+        },
+      },
+      { $unwind: "$ThongTinHang" },
+      {
+        $project: {
+          _id: 0,
+          MaHangHoa: "$_id",
+          TenHangHoa: "$ThongTinHang.Ten",
+          TongSoLuong: 1,
+          TongTien: 1,
+        },
+      },
+    ]);
+
+    return {
+      status: 200,
+      message: "Lấy thong ke ban hang thang nay",
+      data: thongke,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi lấy thong ke ban hang thang nay",
+    };
+  }
+};
+const ThongKeTonKho = async () => {
+  try {
+    const hangHoa = await HangHoa.find().sort({ SoLuong: 1 });
+    return {
+      status: 200,
+      message: "Lấy thống kê tồn kho",
+      data: hangHoa,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi lấy thống kê tồn kho",
+    };
+  }
+};
+const ThongKeDoanhThu = async ({ ngaybatdau, ngayketthuc }) => {
+  try {
+    ngayketthuc = new Date(ngayketthuc);
+    ngayketthuc.setDate(ngayketthuc.getDate() + 1);
+    const tongDoanhThu = await HoaDon.aggregate([
+      {
+        $match: {
+          NgayLap: {
+            $gte: new Date(ngaybatdau),
+            $lt: new Date(ngayketthuc),
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "chitiethoadons",
+          localField: "_id",
+          foreignField: "MaHoaDon",
+          as: "chiTiet",
+        },
+      },
+      { $unwind: "$chiTiet" },
+      {
+        $group: {
+          _id: "$_id",
+          MaKhuyenMai: { $first: "$MaKhuyenMai" },
+          TongTienHang: {
+            $sum: { $multiply: ["$chiTiet.SoLuong", "$chiTiet.DonGia"] },
+          },
+          NgayLap: { $first: "$NgayLap" },
+        },
+      },
+      {
+        $lookup: {
+          from: "khuyenmais",
+          localField: "MaKhuyenMai",
+          foreignField: "_id",
+          as: "khuyenMai",
+        },
+      },
+      {
+        $addFields: {
+          TienKhuyenMai: {
+            $cond: {
+              if: { $gt: [{ $size: "$khuyenMai" }, 0] },
+              then: { $sum: "$khuyenMai.TienKhuyenMai" },
+              else: 0,
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          NgayLap: 1,
+          TongTienHang: 1,
+          TienKhuyenMai: 1,
+          DoanhThu: { $subtract: ["$TongTienHang", "$TienKhuyenMai"] },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$NgayLap" }, // nhóm theo ngày
+          },
+          TongDoanhThu: { $sum: "$DoanhThu" },
+          TongTienHang: { $sum: "$TongTienHang" },
+          TongTienKhuyenMai: { $sum: "$TienKhuyenMai" },
+        },
+      },
+      { $sort: { _id: 1 } }, // sắp xếp theo ngày tăng dần
+    ]);
+
+    return {
+      status: 200,
+      message: "Lấy thong ke doanh thu",
+      data: tongDoanhThu,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi lấy thong ke doanh thu",
+    };
+  }
+};
 module.exports = {
   ThemChucVu,
   XemChucVu,
@@ -1058,4 +1284,8 @@ module.exports = {
   LayQuyenCuaChucVu,
   LayKhuyenMaiBangId,
   XoaThanhToan,
+  ThongKeNhapHang,
+  ThongKeBanHang,
+  ThongKeTonKho,
+  ThongKeDoanhThu,
 };

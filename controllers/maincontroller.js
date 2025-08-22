@@ -693,6 +693,42 @@ const laythongtinhoadon = async (req, res) => {
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
+const thongkenhaphang = async (req, res) => {
+  try {
+    const result = await service.ThongKeNhapHang(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const thongkebanhang = async (req, res) => {
+  try {
+    const result = await service.ThongKeBanHang(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const thongketonkho = async (req, res) => {
+  try {
+    const result = await service.ThongKeTonKho();
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const thongkedoanhthu = async (req, res) => {
+  try {
+    const result = await service.ThongKeDoanhThu(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
 module.exports = {
   themchucvu,
   xemchucvu,
@@ -745,4 +781,8 @@ module.exports = {
   layquyencuachucvu,
   laythongtinhoadon,
   laykhuyenmaibangid,
+  thongkenhaphang,
+  thongkebanhang,
+  thongketonkho,
+  thongkedoanhthu,
 };
