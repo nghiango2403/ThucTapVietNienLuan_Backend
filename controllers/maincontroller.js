@@ -144,7 +144,7 @@ const doithongtintaikhoan = async (req, res) => {
 };
 const xemdanhsachnhanvien = async (req, res) => {
   try {
-    const result = await service.XemDanhSachNhanVien(req.query);
+    const result = await service.XemDanhSachNhanVien();
     return res.status(result.status).json(result);
   } catch (error) {
     return res.status(400).json({ message: "Lỗi service" });
@@ -187,14 +187,7 @@ const doimatkhaunhanvien = async (req, res) => {
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
-const doichucvu = async (req, res) => {
-  try {
-    const result = await service.DoiChucVu(req.query);
-    return res.status(result.status).json(result);
-  } catch (error) {
-    return res.status(400).json({ message: "Lỗi service" });
-  }
-};
+
 const mohoackhoataikhoan = async (req, res) => {
   try {
     const result = await service.MoHoacKhoaTaiKhoan(req.query);
@@ -313,9 +306,17 @@ const xemkhuyenmai = async (req, res) => {
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
+const laykhuyenmaibangid = async (req, res) => {
+  try {
+    const result = await service.LayKhuyenMaiBangId(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
 const xemkhuyenmaiconhoatdong = async (req, res) => {
   try {
-    const result = await service.XemKhuyenMaiConHoatDong(req.query);
+    const result = await service.XemKhuyenMaiConHoatDong();
     return res.status(result.status).json(result);
   } catch (error) {
     return res.status(400).json({ message: "Lỗi service" });
@@ -323,11 +324,13 @@ const xemkhuyenmaiconhoatdong = async (req, res) => {
 };
 const themhoadon = async (req, res) => {
   try {
-    const result = await service.ThemHoaDon(req.body, req.user.MaNhanVien);
+    console.log(req.body);
+    const result = await service.ThemHoaDon(req.body, req.user.MaNhanSu);
+    console.log("a:", result);
     if (result.status !== 200) {
       return res.status(result.status).json(result);
     }
-    const km = await service.LayThongTinHoaDon(req.body.MaHoaDon);
+    const km = await service.LayThongTinHoaDon(result.data.MaHoaDon);
     let ThongTinKhuyenMai = null;
     if (km.status === 200) {
       ThongTinKhuyenMai = km.data.MaKhuyenMai;
@@ -340,7 +343,7 @@ const themhoadon = async (req, res) => {
       );
       return res.status(response.status).json(response);
     }
-    if (req.body.HinhThucThanhToan === "ZaLoPay") {
+    if (req.body.HinhThucThanhToan === "ZaloPay") {
       response = await thanhtoanservice.TaoThanhToanZaLoPay(
         result.data.MaHoaDon,
         result.data.items,
@@ -373,7 +376,7 @@ const xemdanhsachhoadoncuanhanvien = async (req, res) => {
   try {
     const result = await service.XemDanhSachHoaDonCuaNhanVien(
       req.query,
-      req.user.MaNhanVien
+      req.user.MaNhanSu
     );
     return res.status(result.status).json(result);
   } catch (error) {
@@ -390,9 +393,11 @@ const xemchitiethoadon = async (req, res) => {
 };
 const xoahoadon = async (req, res) => {
   try {
+    console.log(req.body);
     const result = await service.XoaHoaDon(req.body);
     return res.status(result.status).json(result);
   } catch (error) {
+    console.log(error);
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
@@ -414,6 +419,89 @@ const taothanhtoanmomo = async (req, res) => {
       ThongTinKhuyenMai
     );
     return res.status(response.status).json(response);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const kiemtratrangthaithanhtoan = async (req, res) => {
+  try {
+    const layhoadon = await service.LayHoaDon(req.query.MaHoaDon);
+    if (layhoadon.status !== 200)
+      return res.status(layhoadon.status).json(layhoadon);
+    if (layhoadon.data.HinhThucThanhToan == "ZaloPay") {
+      const result = await thanhtoanservice.KiemTraTrangThaiThanhToanZaLoPay(
+        req.query.MaHoaDon
+      );
+      return res.status(result.status).json(result);
+    }
+    if (layhoadon.data.HinhThucThanhToan == "VnPay") {
+      const result = await thanhtoanservice.KiemTraTrangThaiThanhToanVnPay(
+        req.body
+      );
+      return res.status(result.status).json(result);
+    }
+    if (layhoadon.data.HinhThucThanhToan == "MoMo") {
+      const result = await thanhtoanservice.KiemTraTrangThaiThanhToanMoMo(
+        req.query
+      );
+      return res.status(result.status).json(result);
+    }
+    // const result = await thanhtoanservice;
+    // return res.status(result.status).json(result);
+    return res.status(200).json(layhoadon);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const taolaithanhtoan = async (req, res) => {
+  try {
+    const xoathanhtooan = await service.XoaThanhToan(req.body.MaHoaDon);
+    if (xoathanhtooan.status !== 200)
+      return res.status(xoathanhtooan.status).json(xoathanhtooan);
+    const thongtinhd = await service.LayHoaDon(req.body.MaHoaDon);
+    if (thongtinhd.status !== 200) {
+      return res.status(thongtinhd.status).json(thongtinhd);
+    }
+    const km = await service.LayThongTinHoaDon(req.body.MaHoaDon);
+    let ThongTinKhuyenMai = null;
+    if (km.status === 200) {
+      ThongTinKhuyenMai = km.data.MaKhuyenMai;
+    }
+    const layitem = await service.XemChiTietHoaDon({
+      MaHoaDon: req.body.MaHoaDon,
+    });
+    if (layitem.status !== 200) {
+      return res.status(layitem.status).json(layitem);
+    }
+    if (thongtinhd.data.HinhThucThanhToan === "MoMo") {
+      response = await thanhtoanservice.TaoThanhToanMoMo(
+        req.body.MaHoaDon,
+        layitem.data,
+        ThongTinKhuyenMai
+      );
+      return res.status(response.status).json(response);
+    }
+    if (thongtinhd.data.HinhThucThanhToan === "ZaloPay") {
+      response = await thanhtoanservice.TaoThanhToanZaLoPay(
+        req.body.MaHoaDon,
+        layitem.data,
+        ThongTinKhuyenMai
+      );
+      if (thongtinhd.data.HinhThucThanhToan === "VnPay") {
+        response = await thanhtoanservice.TaoThanhToanVnPay(
+          req,
+          layitem.data,
+          ThongTinKhuyenMai
+        );
+      }
+      return res.status(response.status).json(response);
+    }
+
+    return res
+      .status(200)
+      .json({ status: 400, message: "Không tìm thấy hình thức thanh toán" });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ message: "Lỗi service" });
@@ -620,7 +708,6 @@ module.exports = {
   xemthongtinchitietcuanhanvien,
   doithongtinnhanvien,
   doimatkhaunhanvien,
-  doichucvu,
   mohoackhoataikhoan,
   themhanghoa,
   timhanghoa,
@@ -634,7 +721,9 @@ module.exports = {
   xemkhuyenmai,
   xemkhuyenmaiconhoatdong,
   themhoadon,
+  kiemtratrangthaithanhtoan,
   xemdanhsachhoadon,
+  taolaithanhtoan,
   xemdanhsachhoadoncuanhanvien,
   xemchitiethoadon,
   xoahoadon,
@@ -655,4 +744,5 @@ module.exports = {
   xoaquyencuachucvu,
   layquyencuachucvu,
   laythongtinhoadon,
+  laykhuyenmaibangid,
 };

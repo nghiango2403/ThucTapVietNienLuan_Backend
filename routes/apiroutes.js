@@ -5,7 +5,7 @@ const apiController = require("../controllers/maincontroller");
 const middleware = require("../middlewares/xacthucvaphanquyen");
 
 const initApiRoutes = (app) => {
-  // router.use(middleware.XacThuc, middleware.KiemTraTaiKhoanCoBiKhoa);
+  router.use(middleware.XacThuc, middleware.KiemTraTaiKhoanCoBiKhoa);
   router.post("/dangnhap", apiController.dangnhap);
   router.post("/lammoiaccesstoken", apiController.lammoiaccesstoken);
   router.post("/xulythanhtoanmomo", apiController.xulythanhtoanmomo);
@@ -27,7 +27,6 @@ const initApiRoutes = (app) => {
   );
   router.put("/doithongtinnhanvien", apiController.doithongtinnhanvien);
   router.put("/doimatkhaunhanvien", apiController.doimatkhaunhanvien);
-  router.put("/doichucvu", apiController.doichucvu);
   router.put("/mohoackhoataikhoan", apiController.mohoackhoataikhoan);
   router.post("/themhanghoa", apiController.themhanghoa);
   router.get("/timhanghoa", apiController.timhanghoa);
@@ -39,8 +38,14 @@ const initApiRoutes = (app) => {
   router.post("/themkhuyenmai", apiController.themkhuyenmai);
   router.put("/capnhatkhuyenmai", apiController.capnhatkhuyenmai);
   router.get("/laykhuyenmai", apiController.xemkhuyenmai);
+  router.get("/laykhuyenmaibangid", apiController.laykhuyenmaibangid);
   router.get("/laykhuyenmaiconhoatdong", apiController.xemkhuyenmaiconhoatdong);
   router.post("/themhoadon", apiController.themhoadon);
+  router.get(
+    "/kiemtratrangthaithanhtoan",
+    apiController.kiemtratrangthaithanhtoan
+  );
+  router.post("/taolaithanhtoan", apiController.taolaithanhtoan);
   router.get("/xemdanhsachhoadon", apiController.xemdanhsachhoadon);
   router.get(
     "/xemdanhsachhoadoncuanhanvien",

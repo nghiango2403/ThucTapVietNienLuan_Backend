@@ -77,7 +77,7 @@ const TaoThanhToanMoMo = async (MaHoaDon, item, km) => {
     );
 
     return {
-      status: 200,
+      status: 201,
       data: { url: response.data.payUrl, MaThanhToan: orderId },
     };
   } catch (error) {
@@ -292,7 +292,7 @@ const TaoThanhToanZaLoPay = async (MaHoaDon, item, km) => {
       params: order,
     });
     return {
-      status: 200,
+      status: 201,
       data: {
         url: result.data.order_url,
         MaThanhToan: "ZALOPAY" + app_trans_id,
@@ -490,7 +490,7 @@ const TaoThanhToanVnPay = async (req, item, km) => {
   vnp_Params["vnp_SecureHash"] = signed;
   vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
   return {
-    status: 200,
+    status: 201,
     data: {
       url: vnpUrl,
       MaThanhToan: "VNPAY" + orderId,

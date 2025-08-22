@@ -12,6 +12,7 @@ const HoaDon = require("../models/hoadon");
 const ChiTietHoaDon = require("../models/chitiethoadon");
 const Quyen = require("../models/quyen");
 const QuyenCuaChucVu = require("../models/quyencuachucvu");
+const Thanhtoan = require("../models/thanhtoan");
 
 const ThemChucVu = async (TenChucVu) => {
   try {
@@ -205,7 +206,7 @@ const LayThongTinTaiKhoan = async ({ MaNhanSu }) => {
 };
 const DoiThongTinTaiKhoan = async (
   MaNhanSu,
-  { HoTen, SDT, Email, NgaySinh, DiaChi, GioiTinh }
+  { HoTen, SDT, Email, NgaySinh, DiaChi, GioiTinh, MaChucVu }
 ) => {
   try {
     if (!MaNhanSu) {
@@ -222,6 +223,7 @@ const DoiThongTinTaiKhoan = async (
       DiaChi,
       GioiTinh: parseInt(GioiTinh),
     });
+    await TaiKhoan.findOneAndUpdate({ MaNhanSu }, { MaChucVu: MaChucVu });
     return {
       status: 200,
       message: "Đổi thông tin tài khoản thành công",
@@ -234,21 +236,18 @@ const DoiThongTinTaiKhoan = async (
     };
   }
 };
-const XemDanhSachNhanVien = async ({ Trang, Dong }) => {
+const XemDanhSachNhanVien = async () => {
   try {
     const tongSoLuong = await TaiKhoan.countDocuments();
     const danhSachNhanVien = await TaiKhoan.find({})
       .select("TenDangNhap NgaySinh KichHoat")
       .populate({ path: "MaNhanSu", select: "HoTen GioiTinh" })
-      .populate("MaChucVu")
-      .skip((Trang - 1) * Dong)
-      .limit(Dong);
+      .populate("MaChucVu");
     return {
       status: 200,
-      message: "Lấy danh sách nhân viên",
+      message: "Lấy danh sách nhân viên thành công",
       data: {
         danhsach: danhSachNhanVien,
-        sotrang: Math.ceil(tongSoLuong / Dong),
       },
     };
   } catch (error) {
@@ -314,7 +313,6 @@ const XemThongTinChiTietCuaNhanVien = async (MaTaiKhoan) => {
 const DoiMatKhauNhanVien = async ({ MaTaiKhoan, MatKhau }) => {
   try {
     const MatKhauMaHoa = await MaHoaMatKhau(MatKhau);
-    console.log(MaTaiKhoan);
     await TaiKhoan.findByIdAndUpdate(MaTaiKhoan, {
       MatKhau: MatKhauMaHoa,
     });
@@ -330,23 +328,7 @@ const DoiMatKhauNhanVien = async ({ MaTaiKhoan, MatKhau }) => {
     };
   }
 };
-const DoiChucVu = async ({ MaTaiKhoan, MaChucVu }) => {
-  try {
-    await TaiKhoan.findByIdAndUpdate(MaTaiKhoan, {
-      MaChucVu,
-    });
-    return {
-      status: 200,
-      message: "Đổi chức vụ thành công",
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: 400,
-      message: "Lỗi khi đổi chức vụ",
-    };
-  }
-};
+
 const MoHoacKhoaTaiKhoan = async ({ MaTaiKhoan }) => {
   try {
     const tk = await TaiKhoan.findById(MaTaiKhoan);
@@ -385,22 +367,13 @@ const ThemHangHoa = async ({ Ten, Gia }) => {
     };
   }
 };
-const TimHangHoa = async ({ Ten, Trang, Dong }) => {
+const TimHangHoa = async ({ Ten }) => {
   try {
-    const dieuKien = { Ten: { $regex: Ten, $options: "i" } };
-
-    const tongSoLuong = await HangHoa.countDocuments(dieuKien);
-
-    const sp = await HangHoa.find(dieuKien)
-      .skip((Trang - 1) * Dong)
-      .limit(Dong);
-
-    const sotrang = Math.ceil(tongSoLuong / Dong);
-
+    const sp = await HangHoa.find({ Ten: { $regex: Ten, $options: "i" } });
     return {
       status: 200,
       message: "Tìm sản phẩm thành công",
-      data: { danhsach: sp, sotrang },
+      data: sp,
     };
   } catch (error) {
     console.log(error);
@@ -640,28 +613,36 @@ const XemKhuyenMai = async ({ Trang, Dong }) => {
     };
   }
 };
+const LayKhuyenMaiBangId = async ({ MaKhuyenMai }) => {
+  try {
+    const km = await KhuyenMai.findById(MaKhuyenMai);
 
-const XemKhuyenMaiConHoatDong = async ({ Trang, Dong }) => {
+    return {
+      status: 200,
+      message: "Lấy danh sách khuyến mãi thành công",
+      data: km,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lấy danh sách khuyến mãi thất bại",
+    };
+  }
+};
+
+const XemKhuyenMaiConHoatDong = async () => {
   try {
     const today = new Date();
     const dieuKien = {
       NgayBatDau: { $lte: today },
       NgayKetThuc: { $gte: today },
     };
-
-    const tongSoLuong = await KhuyenMai.countDocuments(dieuKien);
-
-    const km = await KhuyenMai.find(dieuKien)
-      .sort({ NgayKetThuc: -1 })
-      .skip((Trang - 1) * Dong)
-      .limit(Dong);
-
-    const sotrang = Math.ceil(tongSoLuong / Dong);
-
+    const km = await KhuyenMai.find(dieuKien).sort({ NgayKetThuc: -1 });
     return {
       status: 200,
       message: "Lấy danh sách khuyến mãi hệ thống",
-      data: { danhsach: km, sotrang },
+      data: { danhsach: km },
     };
   } catch (error) {
     console.log(error);
@@ -696,6 +677,22 @@ const LayThongTinHoaDon = async (MaHoaDon) => {
     };
   }
 };
+const LayHoaDon = async (MaHoaDon) => {
+  try {
+    const hoadon = await HoaDon.findById(MaHoaDon);
+    return {
+      status: 200,
+      message: "Lấy thống tin hóa đơn",
+      data: hoadon,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi lấy thống tin hóa đơn",
+    };
+  }
+};
 const ThemHoaDon = async (
   { MaKhuyenMai, HinhThucThanhToan, ChiTietHD },
   MaNhanVien
@@ -706,7 +703,6 @@ const ThemHoaDon = async (
     var tienhd = 0;
     for (const item of ChiTietHD) {
       const a = await HangHoa.findById(item.MaHangHoa).session(session);
-      console.log(a);
       tienhd += a.Gia * item.SoLuong;
     }
     if (MaKhuyenMai) {
@@ -747,7 +743,6 @@ const ThemHoaDon = async (
     session.endSession();
     const CTHD = await XemChiTietHoaDon({ MaHoaDon: hoadon._id });
 
-    console.log(hoadon._id);
     return {
       status: 200,
       message: "Tạo hóa đơn thành công",
@@ -778,6 +773,10 @@ const XemDanhSachHoaDon = async ({ Trang, Dong, Thang, Nam }) => {
     const tongSoLuong = await HoaDon.countDocuments(dieuKien);
 
     const hd = await HoaDon.find(dieuKien)
+      .populate({
+        path: "MaNhanVien",
+        select: "HoTen",
+      })
       .sort({ NgayLap: -1 })
       .skip((Trang - 1) * Dong)
       .limit(Dong);
@@ -821,14 +820,14 @@ const XemDanhSachHoaDonCuaNhanVien = async (
       .skip((Trang - 1) * Dong)
       .limit(Dong);
 
-    const sotrang = Math.ceil(tongSoLuong / Dong);
+    const soTrang = Math.ceil(tongSoLuong / Dong);
 
     return {
       status: 200,
       message: "Lấy danh sách hóa đơn của nhân viên thành công",
       data: {
         danhsach: hd,
-        sotrang,
+        soTrang,
       },
     };
   } catch (error) {
@@ -842,10 +841,7 @@ const XemDanhSachHoaDonCuaNhanVien = async (
 
 const XemChiTietHoaDon = async ({ MaHoaDon }) => {
   try {
-    const hd = await ChiTietHoaDon.find({ MaHoaDon }).populate({
-      path: "MaHangHoa",
-      select: "-SoLuong",
-    });
+    const hd = await ChiTietHoaDon.find({ MaHoaDon }).populate("MaHangHoa");
     return {
       status: 200,
       message: "Lấy chi tiết hóa đơn thành công",
@@ -873,6 +869,7 @@ const XoaHoaDon = async ({ MaHoaDon }) => {
     }
 
     await ChiTietHoaDon.deleteMany({ MaHoaDon }, { session });
+    await Thanhtoan.deleteMany({ MaHoaDon }, { session });
     await HoaDon.deleteOne({ _id: MaHoaDon }, { session });
     await session.commitTransaction();
     session.endSession();
@@ -1004,6 +1001,22 @@ const LayQuyenCuaChucVu = async (MaChucVu) => {
     };
   }
 };
+const XoaThanhToan = async (MaHoaDon) => {
+  try {
+    const thanhtoan = await Thanhtoan.deleteOne({ MaHoaDon });
+    return {
+      status: 200,
+      message: "Xóa thanh toán thành công",
+      data: thanhtoan,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi xóa thanh toán",
+    };
+  }
+};
 module.exports = {
   ThemChucVu,
   XemChucVu,
@@ -1017,8 +1030,8 @@ module.exports = {
   TimNhanVien,
   XemThongTinChiTietCuaNhanVien,
   DoiMatKhauNhanVien,
-  DoiChucVu,
   MoHoacKhoaTaiKhoan,
+  LayHoaDon,
   ThemHangHoa,
   TimHangHoa,
   CapNhatHangHoa,
@@ -1043,4 +1056,6 @@ module.exports = {
   ThemQuyenCuaChucVu,
   XoaQuyenCuaChucVu,
   LayQuyenCuaChucVu,
+  LayKhuyenMaiBangId,
+  XoaThanhToan,
 };
