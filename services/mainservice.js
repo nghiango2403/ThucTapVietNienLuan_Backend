@@ -436,12 +436,20 @@ const TaoPhieuNhapHang = async ({ DanhSach }) => {
     };
   }
 };
-const LayPhieuNhapHang = async ({ Trang, Dong }) => {
+const LayPhieuNhapHang = async ({ Trang, Dong, Thang, Nam }) => {
   try {
-    const tongSoLuong = await PhieuNhapHang.countDocuments();
+    const BatDau = new Date(Nam, Thang - 1, 1);
+    const KetThuc = new Date(Nam, Thang, 1);
+    const dieuKien = {
+      ThoiGianNhap: {
+        $gte: BatDau,
+        $lt: KetThuc,
+      },
+    };
+    const tongSoLuong = await PhieuNhapHang.countDocuments(dieuKien);
 
-    const phieunhaphang = await PhieuNhapHang.find({})
-      .sort({ ThoiGianNhap: -1 })
+    const phieunhaphang = await PhieuNhapHang.find(dieuKien)
+      .sort({ NgayLap: -1 })
       .skip((Trang - 1) * Dong)
       .limit(Dong);
 

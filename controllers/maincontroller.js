@@ -3,7 +3,7 @@ const thanhtoanservice = require("../services/thanhtoanservice");
 const { XacThucToken, TaoToken } = require("../utils/jwt");
 
 const LaSo = (so) => {
-  return typeof so === "number";
+  return !isNaN(so) && !isNaN(parseFloat(so));
 };
 const lammoiaccesstoken = (req, res) => {
   const { refreshToken } = req.body;
@@ -266,6 +266,7 @@ const xoaphieunhaphang = async (req, res) => {
     const result = await service.XoaPhieuNhapHang(req.body);
     return res.status(result.status).json(result);
   } catch (error) {
+    console.log(error);
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
@@ -286,15 +287,17 @@ const themkhuyenmai = async (req, res) => {
 };
 const capnhatkhuyenmai = async (req, res) => {
   try {
-    if (!LaSo(req.body.TienKhuyenMai) || !LaSo(req.body.DieuKien)) {
+    if (!LaSo(req.query.TienKhuyenMai) || !LaSo(req.query.DieuKien)) {
       return res.status(409).json({
         status: 409,
         message: "Tiền khuyến mãi và điều kiện phải là số",
       });
     }
+
     const result = await service.CapNhatKhuyenMai(req.query);
     return res.status(result.status).json(result);
   } catch (error) {
+    console.log(error);
     return res.status(400).json({ message: "Lỗi service" });
   }
 };
