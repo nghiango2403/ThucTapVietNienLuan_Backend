@@ -206,7 +206,7 @@ const LayThongTinTaiKhoan = async ({ MaNhanSu }) => {
 };
 const DoiThongTinTaiKhoan = async (
   MaNhanSu,
-  { HoTen, SDT, Email, NgaySinh, DiaChi, GioiTinh, MaChucVu }
+  { HoTen, SDT, Email, NgaySinh, DiaChi, GioiTinh }
 ) => {
   try {
     if (!MaNhanSu) {
@@ -223,7 +223,6 @@ const DoiThongTinTaiKhoan = async (
       DiaChi,
       GioiTinh: parseInt(GioiTinh),
     });
-    await TaiKhoan.findOneAndUpdate({ MaNhanSu }, { MaChucVu: MaChucVu });
     return {
       status: 200,
       message: "Đổi thông tin tài khoản thành công",
