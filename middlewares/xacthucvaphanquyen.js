@@ -1,4 +1,7 @@
-const { XemThongTinChiTietCuaNhanVien } = require("../services/mainservice");
+const {
+  LayQuyenCuaChucVu,
+  LayThongTinBangTenDangNhap,
+} = require("../services/mainservice");
 const jwt = require("../utils/jwt");
 whiteList = [
   "/dangnhap",
@@ -33,11 +36,8 @@ const XacThuc = (req, res, next) => {
   }
 };
 const KiemTraTaiKhoanCoBiKhoa = async (req, res, next) => {
-  if (whiteList.some((path) => req.path.includes(path))) {
-    return next();
-  }
   try {
-    const result = await XemThongTinChiTietCuaNhanVien(req.user.MaNhanVien);
+    const result = await LayThongTinBangTenDangNhap(req.body.TenDangNhap);
     if (result.data.KichHoat === false) {
       return res.status(403).json({
         status: 403,
@@ -46,10 +46,25 @@ const KiemTraTaiKhoanCoBiKhoa = async (req, res, next) => {
     }
     next();
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       status: 500,
       message: "Lỗi khi kiểm tra tài khoản",
     });
   }
 };
-module.exports = { XacThuc, KiemTraTaiKhoanCoBiKhoa };
+const PhanQuyen = async (req, res, next) => {
+  if (whiteList.some((path) => req.path.includes(path))) {
+    return next();
+  }
+  const laydsquyen = await LayQuyenCuaChucVu(req.user);
+  if (laydsquyen.status != 200) {
+    return res.status(laydsquyen.status).json(laydsquyen);
+  }
+  const dsQuyen = laydsquyen.data.map((q) => q.MaQuyen.Url);
+  if (!dsQuyen.some((path) => req.path.includes(path))) {
+    return res.status(403).json({ message: "Không có quyền truy cập" });
+  }
+  next();
+};
+module.exports = { XacThuc, KiemTraTaiKhoanCoBiKhoa, PhanQuyen };

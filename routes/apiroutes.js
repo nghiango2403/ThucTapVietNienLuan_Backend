@@ -5,8 +5,12 @@ const apiController = require("../controllers/maincontroller");
 const middleware = require("../middlewares/xacthucvaphanquyen");
 
 const initApiRoutes = (app) => {
-  router.use(middleware.XacThuc, middleware.KiemTraTaiKhoanCoBiKhoa);
-  router.post("/dangnhap", apiController.dangnhap);
+  router.use(middleware.XacThuc, middleware.PhanQuyen);
+  router.post(
+    "/dangnhap",
+    middleware.KiemTraTaiKhoanCoBiKhoa,
+    apiController.dangnhap
+  );
   router.post("/lammoiaccesstoken", apiController.lammoiaccesstoken);
   router.post("/xulythanhtoanmomo", apiController.xulythanhtoanmomo);
   router.post("/xulythanhtoanzalopay", apiController.xulythanhtoanzalopay);

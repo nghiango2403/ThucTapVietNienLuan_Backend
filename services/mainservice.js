@@ -990,7 +990,7 @@ const XoaQuyenCuaChucVu = async ({ MaChucVu, MaQuyen }) => {
     };
   }
 };
-const LayQuyenCuaChucVu = async (MaChucVu) => {
+const LayQuyenCuaChucVu = async ({ MaChucVu }) => {
   try {
     const quyen = await QuyenCuaChucVu.find({ MaChucVu })
       .populate("MaQuyen")
@@ -1250,6 +1250,22 @@ const ThongKeDoanhThu = async ({ ngaybatdau, ngayketthuc }) => {
     };
   }
 };
+const LayThongTinBangTenDangNhap = async (TenDangNhap) => {
+  try {
+    const nhanVien = await TaiKhoan.findOne({ TenDangNhap: TenDangNhap });
+    return {
+      status: 200,
+      message: "Lấy thông tin bằng tên đăng nhập",
+      data: nhanVien,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Lỗi khi lấy thông tin bằng tên đăng nhập",
+    };
+  }
+};
 module.exports = {
   ThemChucVu,
   XemChucVu,
@@ -1295,4 +1311,5 @@ module.exports = {
   ThongKeBanHang,
   ThongKeTonKho,
   ThongKeDoanhThu,
+  LayThongTinBangTenDangNhap,
 };
