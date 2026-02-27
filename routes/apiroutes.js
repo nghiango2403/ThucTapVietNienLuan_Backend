@@ -34,6 +34,7 @@ const initApiRoutes = (app) => {
   router.put("/mohoackhoataikhoan", apiController.mohoackhoataikhoan);
   router.post("/themhanghoa", apiController.themhanghoa);
   router.get("/timhanghoa", apiController.timhanghoa);
+  router.get("/layhanghoa", apiController.layhanghoa);
   router.put("/capnhathanghoa", apiController.capnhathanghoa);
   router.post("/taophieunhaphang", apiController.taophieunhaphang);
   router.get("/layphieunhaphang", apiController.layphieunhaphang);

@@ -37,6 +37,7 @@ const XacThuc = (req, res, next) => {
 };
 const KiemTraTaiKhoanCoBiKhoa = async (req, res, next) => {
   try {
+    console.log(req.body.TenDangNhap);
     const result = await LayThongTinBangTenDangNhap(req.body.TenDangNhap);
     if (result.data.KichHoat === false) {
       return res.status(403).json({

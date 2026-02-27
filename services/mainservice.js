@@ -382,6 +382,22 @@ const TimHangHoa = async ({ Ten }) => {
     };
   }
 };
+const LayTatCaHangHoa = async () => {
+  try {
+    const sp = await HangHoa.find();
+    return {
+      status: 200,
+      message: "Tìm sản phẩm thành công",
+      data: sp,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 400,
+      message: "Lỗi khi tìm sản phẩm",
+    };
+  }
+};
 
 const CapNhatHangHoa = async ({ MaHangHoa, Ten, Gia }) => {
   try {
@@ -1312,4 +1328,5 @@ module.exports = {
   ThongKeTonKho,
   ThongKeDoanhThu,
   LayThongTinBangTenDangNhap,
+  LayTatCaHangHoa
 };

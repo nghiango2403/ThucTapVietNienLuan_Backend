@@ -136,6 +136,7 @@ const laythongtintaikhoan = async (req, res) => {
 const doithongtintaikhoan = async (req, res) => {
   try {
     const { MaNhanSu } = req.user;
+    console.log(req.query.HoTen, req.query.SDT, req.query.Email, req.query.NgaySinh, req.query.DiaChi, req.query.GioiTinh)
     const result = await service.DoiThongTinTaiKhoan(MaNhanSu, req.query);
     return res.status(result.status).json(result);
   } catch (error) {
@@ -213,6 +214,14 @@ const themhanghoa = async (req, res) => {
 const timhanghoa = async (req, res) => {
   try {
     const result = await service.TimHangHoa(req.query);
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: "Lỗi service" });
+  }
+};
+const layhanghoa = async (req, res) => {
+  try {
+    const result = await service.LayTatCaHangHoa();
     return res.status(result.status).json(result);
   } catch (error) {
     return res.status(400).json({ message: "Lỗi service" });
@@ -788,4 +797,5 @@ module.exports = {
   thongkebanhang,
   thongketonkho,
   thongkedoanhthu,
+  layhanghoa
 };
