@@ -1,16 +1,23 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./configs/db");
 const initApiRoutes = require("./routes/apiroutes");
 const app = express();
-require("dotenv").config();
 const PORT = process.env.PORT || 8080;
-app.use(
-  cors({
-    credentials: true,
-    origin: [process.env.FRONTEND_URL1, process.env.FRONTEND_URL2],
-  })
-);
+
+app.use(cors({ credentials: true, origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (
+      origin.startsWith("http://localhost") ||
+      origin.startsWith("http://127.0.0.1")
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  } }));
 
 app.use(express.json());
 app.use(express.urlencoded({}));
