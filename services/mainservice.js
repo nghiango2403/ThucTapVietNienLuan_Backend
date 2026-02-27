@@ -280,7 +280,9 @@ const TimNhanVien = async (TenNhanVien) => {
     return {
       status: 200,
       message: "Lấy thông tin nhân viên",
-      data: taiKhoans,
+      data: {
+        danhsach: taiKhoans,
+      },
     };
   } catch (error) {
     console.log(error);
